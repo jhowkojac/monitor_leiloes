@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: monitor-leiloes
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python main.py"
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: API_TOKEN
+        value: super_secure_token_2024_change_me_in_production
+      - key: RATE_LIMIT_CALLS
+        value: "50"
+      - key: RATE_LIMIT_PERIOD
+        value: "60"
