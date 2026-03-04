@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ veiculo.titulo }} | Detalhes do Veículo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --surface: #18181c;
+      --border: #2a2a32;
+      --text: #e8e6e3;
+      --muted: #8b8685;
+      --accent: #c9a227;
+      --accent-dim: #a68520;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 0;
+      margin-bottom: 2rem;
+    }
+    header .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .breadcrumbs {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .breadcrumbs a { color: var(--accent); text-decoration: none; }
+    .breadcrumbs a:hover { text-decoration: underline; }
+    
+    .vehicle-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .vehicle-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+    .vehicle-meta {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .meta-label {
+      font-size: 0.875rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .meta-value {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .valor-destaque {
+      color: var(--success);
+      font-size: 1.5rem;
+    }
+    .sucata-badge {
+      display: inline-block;
+      background: var(--error);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    
+    .galeria-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .galeria-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .galeria-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .galeria-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #050507;
+      aspect-ratio: 4/3;
+    }
+    .galeria-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .galeria-item:hover img {
+      transform: scale(1.05);
+    }
+    .galeria-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: var(--muted);
+    }
+    
+    .actions {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .btn-primary:hover {
+      background: var(--accent-dim);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+    .btn i {
+      font-size: 1rem;
+    }
+    
+    .descricao-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .descricao-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .descricao-text {
+      color: var(--text);
+      line-height: 1.6;
+    }
+    
+    @media (max-width: 768px) {
+      .container { padding: 1rem; }
+      .vehicle-header { padding: 1.5rem; }
+      .vehicle-title { font-size: 1.5rem; }
+      .galeria-grid { grid-template-columns: 1fr; }
+      .actions { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>📸 Detalhes do Veículo</h1>
+      <a href="{{ request.url_for('pagina_inicial') }}">← Voltar para leilões</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="breadcrumbs">
+      <a href="{{ request.url_for('pagina_inicial') }}">Leilões</a> → 
+      <a href="{{ request.url_for('pagina_edital', id_=veiculo.url.split('/')[-2] + '/' + veiculo.url.split('/')[-1]) }}">Edital</a> → 
+      Veículo
+    </div>
+
+    <section class="vehicle-header">
+      {% if "SUCATA" in veiculo.titulo.upper() %}
+      <div class="sucata-badge">⚠️ VEÍCULO SUCATA</div>
+      {% endif %}
+      
+      <h2 class="vehicle-title">{{ veiculo.titulo }}</h2>
+      
+      <div class="vehicle-meta">
+        <div class="meta-item">
+          <span class="meta-label">Estado</span>
+          <span class="meta-value">{{ veiculo.estado.value }}</span>
+        </div>
+        {% if veiculo.valor_inicial %}
+        <div class="meta-item">
+          <span class="meta-label">Valor Inicial</span>
+          <span class="meta-value valor-destaque">R$ {{ "%.2f"|format(veiculo.valor_inicial)|replace(".", ",") }}</span>
+        </div>
+        {% endif %}
+        {% if veiculo.cidade %}
+        <div class="meta-item">
+          <span class="meta-label">Cidade</span>
+          <span class="meta-value">{{ veiculo.cidade }}</span>
+        </div>
+        {% endif %}
+      </div>
+      
+      {% if veiculo.descricao %}
+      <div class="descricao-text">{{ veiculo.descricao }}</div>
+      {% endif %}
+    </section>
+
+    <section class="galeria-section">
+      <h3 class="galeria-title">
+        <i class="fas fa-images"></i>
+        Galeria de Fotos em Alta Resolução
+      </h3>
+      
+      <div class="galeria-grid" id="galeria-grid">
+        <div class="galeria-loading">
+          <i class="fas fa-spinner fa-spin"></i>
+          Carregando fotos em alta resolução...
+        </div>
+      </div>
+    </section>
+
+    <section class="actions">
+      <a href="https://leilao.detran.mg.gov.br/lotes/detalhes/{{ detran_id }}" 
+         target="_blank" rel="noopener" 
+         class="btn btn-primary">
+        <i class="fas fa-external-link-alt"></i>
+        Ver no site do Detran MG
+      </a>
+      
+      <button onclick="window.history.back()" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>
+        Voltar
+      </button>
+      
+      <button onclick="shareVehicle()" class="btn btn-secondary">
+        <i class="fas fa-share"></i>
+        Compartilhar
+      </button>
+    </section>
+  </main>
+
+  <script>
+    // Buscar fotos em alta resolução da página do Detran
+    async function carregarFotosAltaResolucao() {
+      const galeriaGrid = document.getElementById('galeria-grid');
+      
+      try {
+        const response = await fetch(`https://leilao.detran.mg.gov.br/lotes/detalhes/{{ detran_id }}`);
+        const html = await response.text();
+        
+        // Criar parser DOM
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Buscar todas as imagens na página
+        const imagens = doc.querySelectorAll('img[src*="Imagens/visualizar"]');
+        const galeriaHtml = [];
+        
+        imagens.forEach((img, index) => {
+          let src = img.getAttribute('src');
+          if (src && src.startsWith('/../')) {
+            src = src.replace('/../', '/leilao/');
+          }
+          if (src && src.startsWith('/')) {
+            src = 'https://leilao.detran.mg.gov.br' + src;
+          }
+          
+          galeriaHtml.push(`
+            <div class="galeria-item">
+              <img src="${src}" alt="Foto ${index + 1} do veículo" loading="lazy">
+            </div>
+          `);
+        });
+        
+        if (galeriaHtml.length > 0) {
+          galeriaGrid.innerHTML = galeriaHtml.join('');
+        } else {
+          galeriaGrid.innerHTML = '<div class="galeria-loading">❌ Fotos não encontradas</div>';
+        }
+        
+      } catch (error) {
+        console.error('Erro ao carregar fotos:', error);
+        galeriaGrid.innerHTML = '<div class="galeria-loading">❌ Erro ao carregar fotos</div>';
+      }
+    }
+    
+    // Compartilhamento
+    function shareVehicle() {
+      if (navigator.share) {
+        navigator.share({
+          title: '{{ veiculo.titulo }}',
+          text: 'Veículo em leilão no Detran MG',
+          url: window.location.href
+        });
+      } else {
+        // Fallback para navegadores que não suportam Web Share API
+        navigator.clipboard.writeText(window.location.href);
+        alert('Link copiado para a área de transferência!');
+      }
+    }
+    
+    // Carregar fotos quando a página carregar
+    document.addEventListener('DOMContentLoaded', carregarFotosAltaResolucao);
+  </script>
+</body>
+</html>

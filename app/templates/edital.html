@@ -263,8 +263,7 @@
             {% endif %}
             {% if v.id and v.id.startswith('detran_mg_edital_veiculo') %}
             <div class="detalhes-link">
-              <a href="https://leilao.detran.mg.gov.br/lotes/detalhes/{{ v.id.split('_')[-1] }}" 
-                 target="_blank" rel="noopener" 
+              <a href="{{ request.url_for('pagina_veiculo_detalhes', veiculo_id=v.id) }}" 
                  class="btn-detalhes">
                 <i class="fas fa-images"></i> Ver fotos em alta resolução
               </a>

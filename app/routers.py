@@ -81,3 +81,46 @@ async def api_obter_leilao(id_: str):
     if not item:
         raise HTTPException(status_code=404, detail="Leilão não encontrado")
     return item
+
+
+@router.get("/veiculos/{veiculo_id}")
+async def pagina_veiculo_detalhes(veiculo_id: str, request: Request):
+    """Página de detalhes do veículo com fotos em alta resolução."""
+    # Extrair ID real do veículo do Detran
+    if veiculo_id.startswith('detran_mg_edital_veiculo_'):
+        # Formato: detran_mg_edital_veiculo_{pagina}_{idx}_{hash}
+        partes = veiculo_id.split('_')
+        if len(partes) >= 5:
+            detran_id = partes[-1]  # Última parte é o ID real
+        else:
+            detran_id = veiculo_id.split('_')[-1]
+    else:
+        detran_id = veiculo_id
+    
+    # Buscar dados completos do veículo diretamente
+    from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
+    
+    # Buscar todos os leilões e encontrar o veículo
+    leiloes = await fonte_detran_mg_oficial.listar_leiloes()
+    veiculo_encontrado = None
+    
+    for leilao in leiloes:
+        veiculos = await fonte_detran_mg_oficial.listar_veiculos_do_edital(leilao.url)
+        for veiculo in veiculos:
+            if veiculo.id == veiculo_id:
+                veiculo_encontrado = veiculo
+                break
+        if veiculo_encontrado:
+            break
+    
+    if not veiculo_encontrado:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
+    
+    return templates.TemplateResponse(
+        "veiculo_detalhes.html",
+        {
+            "request": request,
+            "veiculo": veiculo_encontrado,
+            "detran_id": detran_id,
+        },
+    )
