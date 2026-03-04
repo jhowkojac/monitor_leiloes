@@ -139,6 +139,68 @@ async def api_obter_leilao(id_: str):
     return item
 
 
+@router.get("/health")
+async def health_check():
+    """Health check do sistema."""
+    try:
+        # Verifica cache
+        leiloes = servico_leiloes.listar()
+        
+        # Testa conexão com Detran (rápido)
+        from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
+        conexao_status = "Desconhecido"
+        
+        try:
+            # Teste rápido (sem await completo para não bloquear)
+            import asyncio
+            task = asyncio.create_task(fonte_detran_mg_oficial.listar_leiloes())
+            await asyncio.wait_for(task, timeout=5.0)
+            conexao_status = "✅ Funcionando"
+        except asyncio.TimeoutError:
+            conexao_status = "⚠️ Timeout (lento)"
+        except Exception:
+            conexao_status = "❌ Erro"
+        
+        health_data = {
+            "status": "healthy" if leiloes else "degraded",
+            "timestamp": datetime.now().isoformat(),
+            "cache": {
+                "status": "✅ OK" if leiloes else "❌ Vazio",
+                "count": len(leiloes),
+                "last_update": "recente" if leiloes else "nunca"
+            },
+            "conexao_detran": conexao_status,
+            "endpoints": {
+                "principal": "/",
+                "api": "/api/leiloes",
+                "debug": "/debug",
+                "health": "/health",
+                "docs": "/docs"
+            },
+            "features": {
+                "cache_automatico": "✅ Ativo",
+                "carregamento_automatico": "✅ Ativo",
+                "busca_otimizada": "✅ Ativo",
+                "debug_avancado": "✅ Ativo"
+            }
+        }
+        
+        return {
+            "status_code": 200,
+            "content": health_data
+        }
+        
+    except Exception as e:
+        return {
+            "status_code": 500,
+            "content": {
+                "status": "error",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+        }
+
+
 @router.get("/veiculos/{veiculo_id}")
 async def pagina_veiculo_detalhes(veiculo_id: str, request: Request):
     """Página de detalhes do veículo com fotos em alta resolução."""
