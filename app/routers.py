@@ -1,5 +1,7 @@
 """Rotas da API e páginas web."""
 from typing import Optional
+import os
+from datetime import datetime
 
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse
@@ -38,44 +40,57 @@ async def pagina_inicial(request: Request):
     )
 
 
-@router.get("/init", response_class=HTMLResponse)
-async def inicializar_cache(request: Request):
-    """Inicializa o cache com dados dos leilões."""
+@router.get("/debug", response_class=HTMLResponse)
+async def debug_info(request: Request):
+    """Endpoint de debug para verificar status do sistema."""
     try:
-        print("🔄 Forçando atualização do cache...")
-        await servico_leiloes.atualizar()
-        
-        # Verifica se tem dados
+        # Verifica cache
         leiloes = servico_leiloes.listar()
         
-        if leiloes:
-            return templates.TemplateResponse(
-                "index.html",
-                {
-                    "request": request,
-                    "leiloes": leiloes,
-                    "total": len(leiloes),
-                    "mensagem": f"✅ Cache atualizado com {len(leiloes)} leilões!"
-                },
-            )
-        else:
-            return templates.TemplateResponse(
-                "index.html",
-                {
-                    "request": request,
-                    "leiloes": [],
-                    "total": 0,
-                    "mensagem": "⚠️ Nenhum leilão encontrado. Tente novamente em alguns minutos."
-                },
-            )
-    except Exception as e:
+        # Testa conexão com Detran
+        from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
+        test_conexao = "Desconhecido"
+        
+        try:
+            import asyncio
+            # Testa conexão rápida
+            test_leiloes = asyncio.run(fonte_detran_mg_oficial.listar_leiloes())
+            if test_leiloes:
+                test_conexao = "✅ Funcionando"
+            else:
+                test_conexao = "❌ Sem dados"
+        except Exception as e:
+            test_conexao = f"❌ Erro: {str(e)[:50]}"
+        
+        debug_info = {
+            "cache_status": f"✅ {len(leiloes)} leilões no cache" if leiloes else "❌ Cache vazio",
+            "conexao_detran": test_conexao,
+            "ambiente": os.getenv("ENVIRONMENT", "development"),
+            "rate_limit": os.getenv("RATE_LIMIT_CALLS", "100"),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "endpoints_disponiveis": [
+                "/ - Página principal",
+                "/init - Forçar atualização",
+                "/debug - Informações de debug",
+                "/api/leiloes - API de leilões",
+                "/docs - Documentação"
+            ]
+        }
+        
         return templates.TemplateResponse(
-            "index.html",
+            "debug.html",
             {
                 "request": request,
-                "leiloes": [],
-                "total": 0,
-                "mensagem": f"❌ Erro ao atualizar: {str(e)}"
+                "debug_info": debug_info,
+                "leiloes": leiloes[:5],  # Primeiros 5 para debug
+            },
+        )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "debug.html",
+            {
+                "request": request,
+                "erro": f"Erro no debug: {str(e)}",
             },
         )
 

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Monitor de Leilões</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-card h3 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .status-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-value.success {
+            color: #059669;
+        }
+        
+        .status-value.error {
+            color: #dc2626;
+        }
+        
+        .status-value.warning {
+            color: #d97706;
+        }
+        
+        .endpoints {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .endpoints h3 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+        
+        .endpoint-list {
+            list-style: none;
+        }
+        
+        .endpoint-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .endpoint-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .leiloes-preview {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .leiloes-preview h3 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+        
+        .leilao-item {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .leilao-item h4 {
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .leilao-item p {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+        
+        .actions {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            margin: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .btn.secondary {
+            background: #64748b;
+        }
+        
+        .btn.secondary:hover {
+            background: #475569;
+        }
+        
+        .timestamp {
+            text-align: center;
+            color: #64748b;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+        }
+        
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Debug - Monitor de Leilões</h1>
+            <p>Informações detalhadas do sistema para diagnóstico</p>
+        </div>
+        
+        {% if erro %}
+            <div class="error">
+                <strong>❌ Erro no Debug:</strong> {{ erro }}
+            </div>
+        {% endif %}
+        
+        {% if debug_info %}
+            <div class="status-grid">
+                <div class="status-card">
+                    <h3>📊 Status do Cache</h3>
+                    <div class="status-value {{ 'success' if '✅' in debug_info.cache_status else 'error' }}">
+                        {{ debug_info.cache_status }}
+                    </div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>🌐 Conexão Detran MG</h3>
+                    <div class="status-value {{ 'success' if '✅' in debug_info.conexao_detran else 'error' }}">
+                        {{ debug_info.conexao_detran }}
+                    </div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>🔧 Ambiente</h3>
+                    <div class="status-value">
+                        {{ debug_info.ambiente }}
+                    </div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>⚡ Rate Limit</h3>
+                    <div class="status-value">
+                        {{ debug_info.rate_limit }} req/min
+                    </div>
+                </div>
+            </div>
+            
+            <div class="endpoints">
+                <h3>🔗 Endpoints Disponíveis</h3>
+                <ul class="endpoint-list">
+                    {% for endpoint in debug_info.endpoints_disponiveis %}
+                        <li>{{ endpoint }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            {% if leiloes %}
+                <div class="leiloes-preview">
+                    <h3>📋 Preview dos Leilões (Primeiros 5)</h3>
+                    {% for leilao in leiloes %}
+                        <div class="leilao-item">
+                            <h4>{{ leilao.titulo }}</h4>
+                            <p>
+                                <strong>ID:</strong> {{ leilao.id }}<br>
+                                <strong>Estado:</strong> {{ leilao.estado }}<br>
+                                <strong>Cidade:</strong> {{ leilao.cidade or 'Não informada' }}<br>
+                                <strong>Valor:</strong> R$ {{ leilao.valor_inicial or '0,00' }}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endif %}
+        
+        <div class="actions">
+            <h3>🚀 Ações Rápidas</h3>
+            <a href="/" class="btn">🏠 Página Principal</a>
+            <a href="/init" class="btn secondary">🔄 Forçar Atualização</a>
+            <a href="/api/leiloes" class="btn secondary">📊 API JSON</a>
+            <a href="/docs" class="btn secondary">📚 Documentação</a>
+        </div>
+        
+        <div class="timestamp">
+            🕐 Última atualização: {% if debug_info %}{{ debug_info.timestamp }}{% else %}N/A{% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -61,6 +61,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Pega IP do cliente
         client_ip = self._get_client_ip(request)
         
+        # Pula rate limiting para requisições locais e do próprio servidor
+        if client_ip in ["127.0.0.1", "::1", "localhost"]:
+            return await call_next(request)
+        
         # Verifica rate limit
         if not self._is_allowed(client_ip):
             raise HTTPException(
