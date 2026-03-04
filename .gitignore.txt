@@ -1,0 +1,20 @@
+# Ambientes Virtuais
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Variáveis de ambiente (Segurança!)
+.env
+
+# Pastas do Cursor/VS Code
+.vscode/
+.cursor/
+
+# Banco de dados local (se houver)
+*.db
+*.sqlite3

@@ -1,0 +1,13 @@
+---
+description: Padrões do projeto Monitor de Leilões (FastAPI, Python)
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Monitor de Leilões – Padrões Python/FastAPI
+
+- Responder sempre em **português** (comentários, docstrings, mensagens ao usuário).
+- Usar **Pydantic** para modelos de dados (`app/models.py`); enums para estados e fontes.
+- Novas fontes de leilão: criar classe em `app/fontes/` herdando de `FonteLeilaoBase`, implementar `listar_leiloes()` assíncrono e registrar em `app/servico.py`.
+- Rotas: API em `/api/*`, página inicial em `/`; usar `HTTPException` para erros (ex.: 404).
+- Manter templates em `app/templates/`; dados de exemplo em `app/fontes/mock_mg_sp.py` até integrar fontes reais.
