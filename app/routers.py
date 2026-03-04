@@ -52,9 +52,8 @@ async def debug_info(request: Request):
         test_conexao = "Desconhecido"
         
         try:
-            import asyncio
-            # Testa conexão rápida
-            test_leiloes = asyncio.run(fonte_detran_mg_oficial.listar_leiloes())
+            # Testa conexão rápida (sem asyncio.run - já estamos em contexto async)
+            test_leiloes = await fonte_detran_mg_oficial.listar_leiloes()
             if test_leiloes:
                 test_conexao = "✅ Funcionando"
             else:
