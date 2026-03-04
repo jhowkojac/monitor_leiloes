@@ -36,7 +36,11 @@ async def pagina_inicial(request: Request):
     ]
     return templates.TemplateResponse(
         "index.html",
-        {"request": request, "leiloes": resumos},
+        {
+            "request": request,
+            "leiloes": resumos,
+            "total": len(resumos),  # Adicionando a variável total
+        },
     )
 
 
