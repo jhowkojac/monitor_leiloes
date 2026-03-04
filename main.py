@@ -40,9 +40,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Monitor de Leilões",
+    title="Monitor de Leilões - VERSÃO CORRIGIDA",
     description="API para monitoramento de leilões de veículos",
-    version="1.0.1",  # Incrementado para forçar deploy
+    version="1.0.2",  # Forçar deploy com import os corrigido
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc"
