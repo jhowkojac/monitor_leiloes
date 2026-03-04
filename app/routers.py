@@ -38,6 +38,48 @@ async def pagina_inicial(request: Request):
     )
 
 
+@router.get("/init", response_class=HTMLResponse)
+async def inicializar_cache(request: Request):
+    """Inicializa o cache com dados dos leilões."""
+    try:
+        print("🔄 Forçando atualização do cache...")
+        await servico_leiloes.atualizar()
+        
+        # Verifica se tem dados
+        leiloes = servico_leiloes.listar()
+        
+        if leiloes:
+            return templates.TemplateResponse(
+                "index.html",
+                {
+                    "request": request,
+                    "leiloes": leiloes,
+                    "total": len(leiloes),
+                    "mensagem": f"✅ Cache atualizado com {len(leiloes)} leilões!"
+                },
+            )
+        else:
+            return templates.TemplateResponse(
+                "index.html",
+                {
+                    "request": request,
+                    "leiloes": [],
+                    "total": 0,
+                    "mensagem": "⚠️ Nenhum leilão encontrado. Tente novamente em alguns minutos."
+                },
+            )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "leiloes": [],
+                "total": 0,
+                "mensagem": f"❌ Erro ao atualizar: {str(e)}"
+            },
+        )
+
+
 @router.get("/editais/{id_}", response_class=HTMLResponse)
 async def pagina_edital(id_: str, request: Request):
     """Página de detalhes de um edital, com veículos em carrossel."""
