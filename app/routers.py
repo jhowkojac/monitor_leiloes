@@ -153,30 +153,49 @@ async def pagina_veiculo_detalhes(veiculo_id: str, request: Request):
     else:
         detran_id = veiculo_id
     
-    # Buscar dados completos do veículo diretamente
+    # Buscar dados completos do veículo de forma otimizada
     from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
     
-    # Buscar todos os leilões e encontrar o veículo
-    leiloes = await fonte_detran_mg_oficial.listar_leiloes()
-    veiculo_encontrado = None
-    
-    for leilao in leiloes:
-        veiculos = await fonte_detran_mg_oficial.listar_veiculos_do_edital(leilao.url)
-        for veiculo in veiculos:
-            if veiculo.id == veiculo_id:
-                veiculo_encontrado = veiculo
-                break
-        if veiculo_encontrado:
-            break
-    
-    if not veiculo_encontrado:
-        raise HTTPException(status_code=404, detail="Veículo não encontrado")
-    
-    return templates.TemplateResponse(
-        "veiculo_detalhes.html",
-        {
-            "request": request,
-            "veiculo": veiculo_encontrado,
-            "detran_id": detran_id,
-        },
-    )
+    try:
+        # Tenta buscar diretamente pelo ID primeiro
+        print(f"🔍 Buscando veículo ID: {detran_id}")
+        
+        # Busca em todos os leilões (mais eficiente que buscar por edital)
+        leiloes = await fonte_detran_mg_oficial.listar_leiloes()
+        
+        veiculo_encontrado = None
+        edital_encontrado = None
+        
+        for leilao in leiloes:
+            # Se o ID corresponder a algum veículo deste leilão
+            if detran_id in leilao.id:
+                veiculos = await fonte_detran_mg_oficial.listar_veiculos_do_edital(leilao.url)
+                for veiculo in veiculos:
+                    if veiculo.id == veiculo_id:
+                        veiculo_encontrado = veiculo
+                        edital_encontrado = leilao
+                        print(f"✅ Veículo encontrado no edital: {leilao.titulo}")
+                        break
+                if veiculo_encontrado:
+                    break
+        
+        if not veiculo_encontrado:
+            print(f"❌ Veículo não encontrado em nenhum edital")
+            raise HTTPException(status_code=404, detail="Veículo não encontrado")
+        
+        return templates.TemplateResponse(
+            "veiculo_detalhes.html",
+            {
+                "request": request,
+                "veiculo": veiculo_encontrado,
+                "detran_id": detran_id,
+                "edital": edital_encontrado,
+            },
+        )
+        
+    except HTTPException:
+        # Repassa HTTP exceptions (como 404)
+        raise
+    except Exception as e:
+        print(f"❌ Erro ao buscar veículo: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar veículo: {str(e)}")
