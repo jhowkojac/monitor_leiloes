@@ -213,7 +213,7 @@ class APITokenMiddleware(BaseHTTPMiddleware):
     def _validate_token(self, token: str) -> bool:
         """Valida token da API"""
         # Remove "Bearer " se presente
-        if token.startswith("Bearer "):
+        if token and token.startswith("Bearer "):
             token = token[7:]
         
         # Compara com token esperado

@@ -47,7 +47,14 @@ app = FastAPI(
 )
 
 # Configura middlewares de segurança (em ordem inversa de execução)
-app.add_middleware(APITokenMiddleware, protected_paths=["/api/leiloes/atualizar"])
+# Em produção, todos os middlewares ativos
+# Em desenvolvimento, mais permissivo
+if os.getenv("ENVIRONMENT") == "production":
+    app.add_middleware(APITokenMiddleware, protected_paths=["/api/leiloes/atualizar"])
+else:
+    # Em desenvolvimento, sem proteção de token para facilitar testes
+    print("🔧 Modo desenvolvimento: API Token desativado")
+
 app.add_middleware(InputValidationMiddleware)
 app.add_middleware(RateLimitMiddleware, calls=100, period=60)
 app.add_middleware(RequestLoggingMiddleware)
