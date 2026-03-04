@@ -245,6 +245,22 @@
     <div id="lista" class="grid">
       {% for leilao in leiloes %}
       <article class="card" data-estado="{{ leilao.estado.value }}" data-fonte="{{ leilao.fonte.value }}" data-cidade="{{ (leilao.cidade or '')|lower }}">
+        <div class="leiloes-header">
+                <h2>📋 Leilões Disponíveis</h2>
+                <div class="leiloes-stats">
+                    <span class="stat">
+                        <strong>{{ total }}</strong> leilões encontrados
+                    </span>
+                    {% if total > 0 %}
+                    <span class="stat">
+                        <strong>{{ leiloes | selectattr('valor_inicial') | map(attribute='valor_inicial') | selectattr('defined') | list | length }}</strong> com valores
+                    </span>
+                    {% endif %}
+                </div>
+                <button onclick="location.href='/init'" class="btn-refresh">
+                    🔄 Atualizar Lista
+                </button>
+            </div>
         <div class="carousel" data-index="0">
           {% set imagens = leilao.imagens or ([] if not leilao.imagem_url else [leilao.imagem_url]) %}
           {% if imagens %}
