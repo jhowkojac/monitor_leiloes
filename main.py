@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.routers import router
+from app.servico import servico_leiloes
 from app.security import (
     SecurityHeadersMiddleware,
     RateLimitMiddleware,
