@@ -81,3 +81,9 @@ Se aparecer erro ao rodar `pip install -r requirements.txt` relacionado a `pydan
 1. Instale o Python 3.12 em https://www.python.org/downloads/ (marque "Add to PATH").
 2. Crie o venv com esse Python: `py -3.12 -m venv venv` (ou `python3.12 -m venv venv`).
 3. Ative e instale: `venv\Scripts\activate` e `pip install -r requirements.txt`.
+
+## 🛠️ Pré-requisitos para Colaboradores
+Para rodar este projeto em Windows (especialmente no Python 3.14), precisas de:
+1. **Visual Studio Community 2022**: Com a carga de trabalho "Desenvolvimento para desktop com C++" instalada.
+2. **Rust**: Necessário para compilar o `pydantic-core`.
+3. **Python 3.14+**.
