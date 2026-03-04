@@ -1,4 +1,5 @@
 """Monitor de Leilões - FastAPI Application"""
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
