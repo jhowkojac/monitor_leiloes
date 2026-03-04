@@ -290,10 +290,7 @@
         <div class="footer-meta">Data do leilão: {{ leilao.data_leilao.strftime("%d/%m/%Y") }}</div>
         {% endif %}
         <div class="footer-meta">
-          <a href="{{ request.url_for('pagina_edital', id_=leilao.id) }}">Ver edital na aplicação →</a>
-          {% if leilao.url %}
-          · <a href="{{ leilao.url }}" target="_blank" rel="noopener">Ver no site do Detran →</a>
-          {% endif %}
+          <a href="{{ request.url_for('pagina_edital', id_=leilao.id) }}" style="font-weight: 600;">Ver detalhes →</a>
         </div>
       </article>
       {% endfor %}

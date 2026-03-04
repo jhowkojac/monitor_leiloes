@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
       --bg: #0f0f12;
@@ -154,6 +155,56 @@
       color: var(--muted);
       font-size: 0.9rem;
     }
+    .descricao {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    /* Estilos para sucata */
+    .card-sucata {
+      border-left: 4px solid #dc2626 !important;
+      background: linear-gradient(135deg, var(--surface) 0%, rgba(220, 38, 38, 0.1) 100%) !important;
+    }
+    .sucata-badge {
+      display: inline-block;
+      background: #dc2626;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    /* Estilos para informações do veículo */
+    .vehicle-info {
+      padding: 1rem;
+    }
+    .detalhes-link {
+      margin-top: 0.75rem;
+    }
+    .btn-detalhes {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--accent);
+      color: var(--bg);
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-detalhes:hover {
+      background: var(--accent-dim);
+      transform: translateY(-1px);
+    }
+    .btn-detalhes i {
+      font-size: 0.875rem;
+    }
   </style>
 </head>
 <body>
@@ -179,7 +230,8 @@
       <h2 style="font-size:1.1rem; margin-bottom:0.75rem;">Veículos deste edital</h2>
       <div class="cards">
         {% for v in veiculos %}
-        <article class="card">
+        {% set is_sucata = "SUCATA" in v.titulo.upper() %}
+        <article class="card {% if is_sucata %}card-sucata{% endif %}">
           <div class="carousel" data-index="0">
             {% set imagens = v.imagens or ([] if not v.imagem_url else [v.imagem_url]) %}
             {% if imagens %}
@@ -201,10 +253,24 @@
             </div>
             {% endif %}
           </div>
-          <h3>{{ v.titulo }}</h3>
-          {% if v.descricao %}
-          <div class="descricao">{{ v.descricao }}</div>
-          {% endif %}
+          <div class="vehicle-info">
+            <h3>{{ v.titulo }}</h3>
+            {% if is_sucata %}
+            <span class="sucata-badge">SUCATA</span>
+            {% endif %}
+            {% if v.descricao %}
+            <div class="descricao">{{ v.descricao }}</div>
+            {% endif %}
+            {% if v.id and v.id.startswith('detran_mg_edital_veiculo') %}
+            <div class="detalhes-link">
+              <a href="https://leilao.detran.mg.gov.br/lotes/detalhes/{{ v.id.split('_')[-1] }}" 
+                 target="_blank" rel="noopener" 
+                 class="btn-detalhes">
+                <i class="fas fa-images"></i> Ver fotos em alta resolução
+              </a>
+            </div>
+            {% endif %}
+          </div>
         </article>
         {% endfor %}
       </div>
