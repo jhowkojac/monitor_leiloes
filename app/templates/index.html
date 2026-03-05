@@ -257,9 +257,6 @@
                     </span>
                     {% endif %}
                 </div>
-                <button onclick="location.href='/init'" class="btn-refresh">
-                    🔄 Atualizar Lista
-                </button>
             </div>
         <div class="carousel" data-index="0">
           {% set imagens = leilao.imagens or ([] if not leilao.imagem_url else [leilao.imagem_url]) %}
