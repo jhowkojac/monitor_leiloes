@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.routers import router
+from app.routers.auth import router as auth_router
 from app.servico import servico_leiloes
 from app.security import (
     SecurityHeadersMiddleware,
@@ -13,6 +14,7 @@ from app.security import (
     InputValidationMiddleware,
     APITokenMiddleware
 )
+from app.middleware.auth import AuthMiddleware
 
 
 @asynccontextmanager
@@ -73,8 +75,12 @@ app.add_middleware(RateLimitMiddleware, calls=100, period=60)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 
+# Adicionar middleware de autenticação
+app.add_middleware(AuthMiddleware)
+
 # Inclui rotas
 app.include_router(router)
+app.include_router(auth_router)
 
 # Serve arquivos estáticos (se necessário)
 # app.mount("/static", StaticFiles(directory="static"), name="static")

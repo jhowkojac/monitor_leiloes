@@ -7,11 +7,26 @@ from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from app.models import Estado, LeilaoResumo
+from app.models import Estado, LeilaoResumo, VeiculoLeilao, FonteLeilao
+from app.models.user import User
 from app.servico import servico_leiloes
+from app.middleware.auth import get_current_user_optional
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+
+@router.get("/login", response_class=HTMLResponse)
+async def pagina_login(request: Request):
+    """Página de login."""
+    # Verificar se já está logado
+    user = get_current_user_optional(request)
+    if user:
+        # Já está logado, redirecionar para página inicial
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/", status_code=302)
+    
+    return templates.TemplateResponse("login.html", {"request": request})
 
 
 @router.get("/", response_class=HTMLResponse)
