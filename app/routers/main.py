@@ -7,11 +7,58 @@ from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from app.models import Estado, LeilaoResumo
+from app.models import Estado, LeilaoResumo, VeiculoLeilao, FonteLeilao
+from app.models.user import User
 from app.servico import servico_leiloes
+from app.middleware.auth import get_current_user_optional
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+
+@router.get("/login", response_class=HTMLResponse)
+async def pagina_login(request: Request):
+    """Página de login."""
+    # Verificar se já está logado
+    user = get_current_user_optional(request)
+    if user:
+        # Já está logado, redirecionar para página inicial
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/", status_code=302)
+    
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@router.get("/setup-2fa", response_class=HTMLResponse)
+async def pagina_setup_2fa(request: Request):
+    """Página de configuração de 2FA."""
+    # Verificar se está logado
+    user = get_current_user_optional(request)
+    if not user:
+        # Não está logado, redirecionar para login
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login", status_code=302)
+    
+    return templates.TemplateResponse("setup_2fa.html", {"request": request})
+
+
+@router.get("/dashboard", response_class=HTMLResponse)
+async def pagina_dashboard(request: Request):
+    """Página do dashboard administrativo."""
+    # Verificar se está logado
+    user = get_current_user_optional(request)
+    if not user:
+        # Não está logado, redirecionar para login
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login", status_code=302)
+    
+    # Verificar se é admin
+    if not user.get("is_admin", False):
+        # Não é admin, redirecionar para página inicial
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/", status_code=302)
+    
+    return templates.TemplateResponse("dashboard.html", {"request": request})
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -118,12 +165,12 @@ async def pagina_edital(id_: str, request: Request):
 
 @router.get("/api/leiloes")
 async def api_listar_leiloes(
-    estado: Optional[Estado] = None,
+    estado: Optional[str] = None,
     fonte: Optional[str] = None,
     cidade: Optional[str] = None,
 ):
     """API: lista leilões com filtros opcionais."""
-    itens = servico_leiloes.listar(estado=estado, fonte=fonte, cidade=cidade)
+    itens = servico_leiloes.listar(estado=Estado(estado) if estado else None, fonte=fonte, cidade=cidade)
     return {"total": len(itens), "leiloes": itens}
 
 

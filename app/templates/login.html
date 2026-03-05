@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Monitor de Leilões</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --surface: #18181c;
+      --border: #2a2a32;
+      --text: #e8e6e3;
+      --muted: #8b8685;
+      --accent: #c9a227;
+      --accent-dim: #a68520;
+      --success: #22c55e;
+      --error: #dc2626;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.5;
+    }
+    
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      padding: 2rem;
+    }
+    
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .logo h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    
+    .logo p {
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .form-input::placeholder {
+      color: var(--muted);
+    }
+    
+    .login-button {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .login-button:hover {
+      background: var(--accent-dim);
+      transform: translateY(-1px);
+    }
+    
+    .login-button:disabled {
+      background: var(--muted);
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .error-message {
+      background: rgba(220, 38, 38, 0.1);
+      border: 1px solid var(--error);
+      color: var(--error);
+      padding: 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+    
+    .success-message {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid var(--success);
+      color: var(--success);
+      padding: 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+    
+    .back-link {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    
+    .back-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+    }
+    
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    .message {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    
+    .message.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .message.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .message.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo">
+        <h1>🚗 Monitor de Leilões</h1>
+        <p>Acesso ao sistema</p>
+      </div>
+      
+      <div id="message-container"></div>
+      
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-input"
+            placeholder="seu@email.com"
+            required
+          >
+        </div>
+        
+        <div class="form-group">
+          <label for="password" class="form-label">Senha</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="••••••••"
+            required
+          >
+        </div>
+        
+        <button type="submit" class="login-button" id="login-button">
+          <span id="button-text">Entrar</span>
+        </button>
+      </form>
+      
+      <!-- 2FA Form (inicialmente oculto) -->
+      <form id="2fa-form" class="login-form hidden">
+        <div class="form-header">
+          <h2>Verificação em Duas Etapas</h2>
+          <p>Digite o código do seu aplicativo de autenticação</p>
+        </div>
+        
+        <div class="form-group">
+          <label for="2fa-code" class="form-label">Código de 6 dígitos</label>
+          <input
+            type="text"
+            id="2fa-code"
+            name="2fa-code"
+            class="form-input"
+            placeholder="000000"
+            maxlength="6"
+            pattern="[0-9]{6}"
+            required
+          >
+        </div>
+        
+        <button type="submit" class="login-button" id="2fa-button">
+          <span id="2fa-button-text">Verificar</span>
+        </button>
+        
+        <div class="back-link">
+          <a href="#" id="cancel-2fa">← Cancelar</a>
+        </div>
+      </form>
+      
+      <div class="back-link">
+        <a href="/">← Voltar para o início</a>
+        <a href="/dashboard" id="dashboard-link" style="display: none;">→ Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    class LoginManager {
+      constructor() {
+        this.form = document.getElementById('login-form');
+        this.twoFaForm = document.getElementById('2fa-form');
+        this.button = document.getElementById('login-button');
+        this.twoFaButton = document.getElementById('2fa-button');
+        this.buttonText = document.getElementById('button-text');
+        this.twoFaButtonText = document.getElementById('2fa-button-text');
+        this.messageContainer = document.getElementById('message-container');
+        this.tempToken = null;
+        this.loginData = null;
+        
+        this.init();
+      }
+      
+      init() {
+        this.form.addEventListener('submit', (e) => this.handleLogin(e));
+        this.twoFaForm.addEventListener('submit', (e) => this.handle2FA(e));
+        document.getElementById('cancel-2fa').addEventListener('click', (e) => this.cancel2FA(e));
+        
+        // Auto-format 2FA code
+        document.getElementById('2fa-code').addEventListener('input', (e) => {
+          e.target.value = e.target.value.replace(/\D/g, '');
+        });
+      }
+      
+      async handleLogin(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this.form);
+        this.loginData = {
+          email: formData.get('email'),
+          password: formData.get('password')
+        };
+        
+        this.setLoading(true, 'Entrando...');
+        
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(this.loginData)
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            // Login sem 2FA - sucesso direto
+            this.saveTokens(data);
+            this.redirectToDashboard();
+          } else if (data.requires_2fa) {
+            // Login com 2FA - mostrar formulário 2FA
+            this.tempToken = data.temp_token;
+            this.show2FAForm();
+          } else {
+            this.showMessage(data.detail || 'Erro no login', 'error');
+          }
+        } catch (error) {
+          this.showMessage('Erro de conexão. Tente novamente.', 'error');
+        } finally {
+          this.setLoading(false);
+        }
+      }
+      
+      async handle2FA(e) {
+        e.preventDefault();
+        
+        const code = document.getElementById('2fa-code').value;
+        
+        if (!code || code.length !== 6) {
+          this.showMessage('Digite o código de 6 dígitos', 'error');
+          return;
+        }
+        
+        this.set2FALoading(true, 'Verificando...');
+        
+        try {
+          const response = await fetch('/api/auth/login-2fa', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: this.loginData.email,
+              password: this.loginData.password,
+              two_fa_code: code,
+              temp_token: this.tempToken
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            // 2FA verificado - sucesso
+            this.saveTokens(data);
+            this.redirectToDashboard();
+          } else {
+            this.showMessage(data.detail || 'Código inválido', 'error');
+          }
+        } catch (error) {
+          this.showMessage('Erro de conexão. Tente novamente.', 'error');
+        } finally {
+          this.set2FALoading(false);
+        }
+      }
+      
+      cancel2FA(e) {
+        e.preventDefault();
+        this.hide2FAForm();
+      }
+      
+      show2FAForm() {
+        this.form.classList.add('hidden');
+        this.twoFaForm.classList.remove('hidden');
+        this.clearMessages();
+        document.getElementById('2fa-code').value = '';
+        document.getElementById('2fa-code').focus();
+      }
+      
+      hide2FAForm() {
+        this.twoFaForm.classList.add('hidden');
+        this.form.classList.remove('hidden');
+        this.clearMessages();
+      }
+      
+      saveTokens(data) {
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('refresh_token', data.refresh_token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Mostrar link do dashboard se for admin
+        if (data.user.is_admin) {
+          document.getElementById('dashboard-link').style.display = 'inline';
+        }
+      }
+      
+      redirectToDashboard() {
+        window.location.href = '/';
+      }
+      
+      setLoading(loading, text = 'Entrando...') {
+        this.button.disabled = loading;
+        this.buttonText.textContent = text;
+      }
+      
+      set2FALoading(loading, text = 'Verificando...') {
+        this.twoFaButton.disabled = loading;
+        this.twoFaButtonText.textContent = text;
+      }
+      
+      showMessage(message, type) {
+        this.messageContainer.innerHTML = `
+          <div class="message ${type}">
+            ${message}
+          </div>
+        `;
+        
+        setTimeout(() => {
+          this.clearMessages();
+        }, 5000);
+      }
+      
+      clearMessages() {
+        this.messageContainer.innerHTML = '';
+      }
+    }
+    
+    // Inicializar quando o DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', () => {
+      new LoginManager();
+    });
+  </script>
+</body>
+</html>

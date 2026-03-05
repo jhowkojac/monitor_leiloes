@@ -1,24 +1,19 @@
-"""Modelos de dados para leilões."""
+from .user import User
+from pydantic import BaseModel
+from typing import List, Optional
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
 
-from pydantic import BaseModel, Field
-
-
+# Definição direta para evitar que o Python precise buscar em outros arquivos que importam 'models'
 class Estado(str, Enum):
-    """Estados com foco do monitoramento."""
-    MG = "MG"
-    SP = "SP"
-
+    MG = 'MG'
+    SP = 'SP'
 
 class FonteLeilao(str, Enum):
-    """Fontes de leilões suportadas."""
-    DETRAN_MG = "detran_mg"
-    DETRAN_SP = "detran_sp"
-    SUPERBID = "superbid"
-    OUTROS = "outros"
-
+    DETRAN_MG = 'detran_mg'
+    DETRAN_SP = 'detran_sp'
+    SUPERBID = 'superbid'
+    OUTROS = 'outros'
 
 class VeiculoLeilao(BaseModel):
     """Dados de um veículo em leilão."""
@@ -38,8 +33,6 @@ class VeiculoLeilao(BaseModel):
     url: Optional[str] = None
     imagem_url: Optional[str] = None
     imagens: Optional[List[str]] = None
-    atualizado_em: datetime = Field(default_factory=datetime.now)
-
 
 class LeilaoResumo(BaseModel):
     """Resumo de leilão para listagem."""
@@ -54,3 +47,5 @@ class LeilaoResumo(BaseModel):
     url: Optional[str] = None
     imagem_url: Optional[str] = None
     imagens: Optional[List[str]] = None
+
+__all__ = ['User', 'Estado', 'FonteLeilao', 'VeiculoLeilao', 'LeilaoResumo']

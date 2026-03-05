@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar 2FA - Monitor de Leilões</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .qr-code img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .steps {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .steps h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .steps ol {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            padding-left: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .backup-codes {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .backup-codes h4 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .backup-codes-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Configurar Autenticação de Dois Fatores</h1>
+            <p>Proteja sua conta com uma camada adicional de segurança</p>
+        </div>
+
+        <div id="message" class="message hidden"></div>
+
+        <!-- Step 1: Setup -->
+        <div id="setup-step">
+            <div class="qr-section">
+                <div class="qr-code">
+                    <img id="qr-code-img" src="" alt="QR Code">
+                </div>
+                <p><strong>Escaneie este QR Code</strong> com seu aplicativo de autenticação</p>
+                <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                    Google Authenticator, Authy, Microsoft Authenticator, etc.
+                </p>
+            </div>
+
+            <div class="steps">
+                <h3>Como configurar:</h3>
+                <ol>
+                    <li>Abra seu aplicativo de autenticação</li>
+                    <li>Escaneie o QR Code acima</li>
+                    <li>Digite o código de 6 dígitos abaixo</li>
+                    <li>Clique em "Ativar 2FA" para finalizar</li>
+                </ol>
+            </div>
+
+            <div class="form-group">
+                <label for="verification-code">Código de Verificação</label>
+                <input type="text" id="verification-code" placeholder="000000" maxlength="6" pattern="[0-9]{6}">
+            </div>
+
+            <button id="enable-2fa-btn" class="btn">Ativar 2FA</button>
+        </div>
+
+        <!-- Step 2: Backup Codes -->
+        <div id="backup-step" class="hidden">
+            <div class="backup-codes">
+                <h4>📋 Códigos de Backup</h4>
+                <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                    Guarde estes códigos em um lugar seguro. Eles podem ser usados para acessar sua conta se você perder acesso ao seu aplicativo.
+                </p>
+                <div id="backup-codes-list" class="backup-codes-list">
+                    <!-- Backup codes will be inserted here -->
+                </div>
+            </div>
+
+            <button id="download-backup-btn" class="btn" style="margin-bottom: 10px;">Baixar Códigos</button>
+            <button id="finish-setup-btn" class="btn">Finalizar Configuração</button>
+        </div>
+
+        <!-- Step 3: Success -->
+        <div id="success-step" class="hidden">
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
+                <h3 style="color: #333; margin-bottom: 10px;">2FA Ativado com Sucesso!</h3>
+                <p style="color: #666; margin-bottom: 20px;">Sua conta agora está protegida com autenticação de dois fatores.</p>
+                <button id="go-to-dashboard-btn" class="btn">Ir para o Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TwoFactorSetup {
+            constructor() {
+                this.setupData = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.loadSetupData();
+                    this.bindEvents();
+                } catch (error) {
+                    this.showMessage('Erro ao carregar configuração: ' + error.message, 'error');
+                }
+            }
+
+            async loadSetupData() {
+                const response = await fetch('/api/2fa/setup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Falha ao configurar 2FA');
+                }
+
+                this.setupData = await response.json();
+                
+                // Exibir QR code
+                document.getElementById('qr-code-img').src = this.setupData.qr_code;
+            }
+
+            bindEvents() {
+                document.getElementById('enable-2fa-btn').addEventListener('click', () => this.enable2FA());
+                document.getElementById('download-backup-btn').addEventListener('click', () => this.downloadBackupCodes());
+                document.getElementById('finish-setup-btn').addEventListener('click', () => this.finishSetup());
+                document.getElementById('go-to-dashboard-btn').addEventListener('click', () => this.goToDashboard());
+
+                // Auto-format verification code
+                document.getElementById('verification-code').addEventListener('input', (e) => {
+                    e.target.value = e.target.value.replace(/\D/g, '');
+                });
+            }
+
+            async enable2FA() {
+                const code = document.getElementById('verification-code').value;
+                
+                if (!code || code.length !== 6) {
+                    this.showMessage('Digite o código de 6 dígitos', 'error');
+                    return;
+                }
+
+                const btn = document.getElementById('enable-2fa-btn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading"></span>Ativando...';
+
+                try {
+                    const response = await fetch('/api/2fa/enable', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ token: code })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        this.showBackupCodes();
+                    } else {
+                        this.showMessage(data.detail || 'Código inválido', 'error');
+                    }
+                } catch (error) {
+                    this.showMessage('Erro ao ativar 2FA: ' + error.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Ativar 2FA';
+                }
+            }
+
+            showBackupCodes() {
+                document.getElementById('setup-step').classList.add('hidden');
+                document.getElementById('backup-step').classList.remove('hidden');
+
+                // Exibir códigos de backup
+                const codesList = document.getElementById('backup-codes-list');
+                codesList.innerHTML = this.setupData.backup_codes.map(code => 
+                    `<div>${code}</div>`
+                ).join('');
+            }
+
+            downloadBackupCodes() {
+                const codes = this.setupData.backup_codes.join('\n');
+                const blob = new Blob([codes], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'backup-codes.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+
+            finishSetup() {
+                document.getElementById('backup-step').classList.add('hidden');
+                document.getElementById('success-step').classList.remove('hidden');
+            }
+
+            goToDashboard() {
+                window.location.href = '/';
+            }
+
+            showMessage(message, type) {
+                const messageEl = document.getElementById('message');
+                messageEl.textContent = message;
+                messageEl.className = `message ${type}`;
+                messageEl.classList.remove('hidden');
+
+                setTimeout(() => {
+                    messageEl.classList.add('hidden');
+                }, 5000);
+            }
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            new TwoFactorSetup();
+        });
+    </script>
+</body>
+</html>
