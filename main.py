@@ -69,11 +69,7 @@ if os.getenv("ENVIRONMENT") == "production":
     app.add_middleware(APITokenMiddleware)
     print("Modo producao: API Token ativado")
 else:
-<<<<<<< HEAD
-    # Development: Desativa APITokenMiddleware
-=======
     # Em desenvolvimento, sem proteção de token para facilitar testes
->>>>>>> feature/2fa-authentication
     print("Modo desenvolvimento: API Token desativado")
 
 app.add_middleware(InputValidationMiddleware)
