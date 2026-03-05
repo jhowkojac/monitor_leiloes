@@ -138,9 +138,10 @@
     
     /* Cards de informações */
     .info-cards {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 1rem;
+      align-items: start;
     }
     .info-card {
       background: var(--surface);
@@ -148,6 +149,10 @@
       border-radius: 12px;
       padding: 1.5rem;
       transition: transform 0.3s ease, border-color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 120px;
     }
     .info-card:hover {
       transform: translateY(-2px);
@@ -164,6 +169,7 @@
       font-size: 1.5rem;
       font-weight: 700;
       color: var(--text);
+      line-height: 1.2;
     }
     .info-card-value.destaque {
       color: var(--accent);
@@ -175,12 +181,14 @@
       color: var(--warning);
     }
     
-    /* Card FIPE especial */
+    /* Card FIPE especial - ocupa 2 colunas */
     .fipe-card {
       background: linear-gradient(135deg, var(--surface), var(--accent-dim));
       border: 2px solid var(--accent);
       position: relative;
       overflow: hidden;
+      grid-column: span 2;
+      min-height: 160px;
     }
     .fipe-card::before {
       content: '';
@@ -362,13 +370,29 @@
       .detalhes-grid {
         grid-template-columns: 1fr;
       }
+      .info-cards {
+        grid-template-columns: 1fr 1fr;
+      }
+      .fipe-card {
+        grid-column: span 2;
+      }
     }
     @media (max-width: 768px) {
       .container { padding: 1rem; }
       .lote-header { padding: 1.5rem; }
       .lote-title { font-size: 1.5rem; }
-      .info-cards { gap: 0.75rem; }
-      .info-card { padding: 1rem; }
+      .info-cards { 
+        grid-template-columns: 1fr;
+        gap: 0.75rem; 
+      }
+      .info-card { 
+        padding: 1rem;
+        min-height: auto;
+      }
+      .fipe-card {
+        grid-column: span 1;
+        min-height: auto;
+      }
       .actions { flex-direction: column; }
       .btn { width: 100%; justify-content: center; }
     }
