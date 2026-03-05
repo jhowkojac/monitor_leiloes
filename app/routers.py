@@ -208,40 +208,29 @@ async def health_check():
 @router.get("/veiculos/{veiculo_id}")
 async def pagina_veiculo_detalhes(veiculo_id: str, request: Request):
     """Página de detalhes do veículo com fotos em alta resolução."""
-    # Extrair ID real do veículo do Detran
-    if veiculo_id.startswith('detran_mg_edital_veiculo_'):
-        # Formato: detran_mg_edital_veiculo_{pagina}_{idx}_{hash}
-        partes = veiculo_id.split('_')
-        if len(partes) >= 5:
-            detran_id = partes[-1]  # Última parte é o ID real
-        else:
-            detran_id = veiculo_id.split('_')[-1]
-    else:
-        detran_id = veiculo_id
-    
-    # Buscar dados completos do veículo de forma otimizada
-    from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
-    
     try:
-        # Tenta buscar diretamente pelo ID primeiro
-        print(f"🔍 Buscando veículo ID: {detran_id}")
+        print(f"🔍 Buscando veículo ID: {veiculo_id}")
         
-        # Busca em todos os leilões (mais eficiente que buscar por edital)
-        leiloes = await fonte_detran_mg_oficial.listar_leiloes()
-        
+        # Primeiro tenta encontrar no cache local
+        leiloes_cache = servico_leiloes.listar()
         veiculo_encontrado = None
         edital_encontrado = None
         
-        for leilao in leiloes:
-            # Se o ID corresponder a algum veículo deste leilão
-            if detran_id in leilao.id:
+        # Procura nos leilões em cache
+        for leilao in leiloes_cache:
+            if veiculo_id in leilao.id:
+                print(f"✅ Veículo encontrado no cache do edital: {leilao.titulo}")
+                # Busca os veículos deste edital específico
+                from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
                 veiculos = await fonte_detran_mg_oficial.listar_veiculos_do_edital(leilao.url)
+                
                 for veiculo in veiculos:
                     if veiculo.id == veiculo_id:
                         veiculo_encontrado = veiculo
                         edital_encontrado = leilao
-                        print(f"✅ Veículo encontrado no edital: {leilao.titulo}")
+                        print(f"✅ Veículo encontrado: {veiculo.titulo}")
                         break
+                
                 if veiculo_encontrado:
                     break
         
@@ -254,8 +243,8 @@ async def pagina_veiculo_detalhes(veiculo_id: str, request: Request):
             {
                 "request": request,
                 "veiculo": veiculo_encontrado,
-                "detran_id": detran_id,
                 "edital": edital_encontrado,
+                "veiculo_id": veiculo_id,
             },
         )
         
