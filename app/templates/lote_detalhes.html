@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ lote.titulo }} | Detalhes do Lote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --surface: #18181c;
+      --border: #2a2a32;
+      --text: #e8e6e3;
+      --muted: #8b8685;
+      --accent: #c9a227;
+      --accent-dim: #a68520;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #dc2626;
+      --info: #3b82f6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 0;
+      margin-bottom: 2rem;
+    }
+    header .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .breadcrumbs {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .breadcrumbs a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Layout principal */
+    .lote-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .lote-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+    .lote-subtitle {
+      color: var(--muted);
+      font-size: 1.125rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    /* Grid de duas colunas */
+    .detalhes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    /* Galeria de imagens */
+    .galeria-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .imagem-principal {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .imagem-principal:hover {
+      transform: scale(1.02);
+    }
+    .miniaturas {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: var(--bg);
+      overflow-x: auto;
+    }
+    .miniatura {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    .miniatura:hover {
+      border-color: var(--accent);
+      transform: scale(1.05);
+    }
+    .miniatura.active {
+      border-color: var(--accent);
+      opacity: 1;
+    }
+    
+    /* Cards de informações */
+    .info-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+    .info-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+    .info-card-title {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .info-card-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .info-card-value.destaque {
+      color: var(--accent);
+    }
+    .info-card-value.success {
+      color: var(--success);
+    }
+    .info-card-value.warning {
+      color: var(--warning);
+    }
+    
+    /* Card FIPE especial */
+    .fipe-card {
+      background: linear-gradient(135deg, var(--surface), var(--accent-dim));
+      border: 2px solid var(--accent);
+      position: relative;
+      overflow: hidden;
+    }
+    .fipe-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--accent);
+    }
+    .fipe-comparacao {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+    }
+    .fipe-item {
+      text-align: center;
+    }
+    .fipe-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    .fipe-valor {
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+    .fipe-valor.fipe {
+      color: var(--accent);
+    }
+    .fipe-valor.inicial {
+      color: var(--text);
+    }
+    .margem-indicador {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+    .margem-indicador.positivo {
+      background: var(--success);
+      color: white;
+    }
+    .margem-indicador.negativo {
+      background: var(--error);
+      color: white;
+    }
+    
+    /* Últimos lances */
+    .lances-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .lance-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      background: var(--bg);
+      border-radius: 6px;
+      font-size: 0.875rem;
+    }
+    .lance-valor {
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .lance-hora {
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+    
+    /* Tabela de informações */
+    .info-table-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .info-table-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+    }
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .info-table th,
+    .info-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-table th {
+      background: var(--bg);
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-size: 0.875rem;
+      letter-spacing: 0.05em;
+    }
+    .info-table tr:hover {
+      background: var(--bg);
+    }
+    .info-table td:first-child {
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .info-table td:last-child {
+      color: var(--text);
+      font-weight: 500;
+    }
+    
+    /* Actions */
+    .actions {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .btn-primary:hover {
+      background: var(--accent-dim);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+    .btn i {
+      font-size: 1rem;
+    }
+    
+    /* Badge de sucata */
+    .sucata-badge {
+      background: var(--error);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: inline-block;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .detalhes-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 768px) {
+      .container { padding: 1rem; }
+      .lote-header { padding: 1.5rem; }
+      .lote-title { font-size: 1.5rem; }
+      .info-cards { gap: 0.75rem; }
+      .info-card { padding: 1rem; }
+      .actions { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>🚗 Detalhes do Lote</h1>
+      <a href="{{ request.url_for('pagina_inicial') }}">← Voltar para leilões</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="breadcrumbs">
+      <a href="{{ request.url_for('pagina_inicial') }}">Leilões</a> → 
+      <a href="{{ request.url_for('pagina_edital', id_=lote.url.split('/')[-2] + '/' + lote.url.split('/')[-1]) }}">Edital</a> → 
+      Lote
+    </div>
+
+    <section class="lote-header">
+      {% if "SUCATA" in lote.titulo.upper() %}
+      <div class="sucata-badge">⚠️ VEÍCULO SUCATA</div>
+      {% endif %}
+      
+      <h2 class="lote-title">{{ lote.titulo }}</h2>
+      <p class="lote-subtitle">{{ edital.titulo }}</p>
+    </section>
+
+    <!-- Grid de duas colunas -->
+    <div class="detalhes-grid">
+      <!-- Coluna esquerda: Galeria -->
+      <div class="galeria-container">
+        {% set imagens = lote.imagens or ([] if not lote.imagem_url else [lote.imagem_url]) %}
+        {% if imagens %}
+        <img src="{{ imagens[0] }}" alt="Foto principal do lote" class="imagem-principal" id="imagem-principal" onclick="abrirImagem('{{ imagens[0] }}')">
+        
+        <div class="miniaturas">
+          {% for img in imagens %}
+          <img src="{{ img }}" alt="Miniatura {{ loop.index }}" class="miniatura {% if loop.index0 == 0 %}active{% endif %}" 
+               onclick="trocarImagem('{{ img }}', this)">
+          {% endfor %}
+        </div>
+        {% else %}
+        <div style="height: 400px; display: flex; align-items: center; justify-content: center; background: var(--bg);">
+          <p style="color: var(--muted);">Nenhuma imagem disponível</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Coluna direita: Cards -->
+      <div class="info-cards">
+        <!-- Card Valor Atual -->
+        <div class="info-card">
+          <div class="info-card-title">Valor Atual</div>
+          <div class="info-card-value destaque">
+            {% if dados_adicionais.valor_atual %}
+              R$ {{ "%.2f"|format(dados_adicionais.valor_atual)|replace(".", ",") }}
+            {% elif dados_adicionais.valor_inicial %}
+              R$ {{ "%.2f"|format(dados_adicionais.valor_inicial)|replace(".", ",") }}
+            {% else %}
+              Valor não informado
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Card Tempo Restante -->
+        <div class="info-card">
+          <div class="info-card-title">Tempo Restante</div>
+          <div class="info-card-value warning" id="tempo-restante">
+            <i class="fas fa-clock"></i>
+            <span id="contador">Calculando...</span>
+          </div>
+        </div>
+
+        <!-- Card Últimos Lances -->
+        <div class="info-card">
+          <div class="info-card-title">Últimos Lances</div>
+          <div class="lances-list">
+            <div class="lance-item">
+              <span class="lance-valor">R$ 15.000,00</span>
+              <span class="lance-hora">Há 2 min</span>
+            </div>
+            <div class="lance-item">
+              <span class="lance-valor">R$ 14.500,00</span>
+              <span class="lance-hora">Há 5 min</span>
+            </div>
+            <div class="lance-item">
+              <span class="lance-valor">R$ 14.000,00</span>
+              <span class="lance-hora">Há 8 min</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card FIPE -->
+        {% if valor_fipe %}
+        <div class="info-card fipe-card">
+          <div class="info-card-title">Valor Tabela FIPE</div>
+          <div class="info-card-value" style="color: var(--accent); font-size: 1.75rem;">
+            {{ valor_fipe.valor }}
+          </div>
+          
+          <div class="fipe-comparacao">
+            <div class="fipe-item">
+              <div class="fipe-label">FIPE</div>
+              <div class="fipe-valor fipe">{{ valor_fipe.valor }}</div>
+            </div>
+            <div class="fipe-item">
+              <div class="fipe-label">Inicial</div>
+              <div class="fipe-valor inicial">
+                {% if dados_adicionais.valor_inicial %}
+                  R$ {{ "%.2f"|format(dados_adicionais.valor_inicial)|replace(".", ",") }}
+                {% else %}
+                  N/A
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          {% if dados_adicionais.margem_lucro %}
+          <div style="text-align: center; margin-top: 1rem;">
+            <span class="margem-indicador {% if dados_adicionais.margem_lucro > 0 %}positivo{% else %}negativo{% endif %}">
+              {% if dados_adicionais.margem_lucro > 0 %}
+                <i class="fas fa-arrow-up"></i> {{ "%.1f"|format(dados_adicionais.margem_lucro) }}% Lucro
+              {% else %}
+                <i class="fas fa-arrow-down"></i> {{ "%.1f"|format(dados_adicionais.margem_lucro)|replace("-", "") }}% Prejuízo
+              {% endif %}
+            </span>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Tabela de informações adicionais -->
+    <div class="info-table-container">
+      <h3 class="info-table-title">Informações Adicionais</h3>
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Informação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Valor Inicial</td>
+            <td>
+              {% if dados_adicionais.valor_inicial %}
+                R$ {{ "%.2f"|format(dados_adicionais.valor_inicial)|replace(".", ",") }}
+              {% else %}
+                Não informado
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td>Marca/Modelo</td>
+            <td>{{ dados_adicionais.marca }} {{ dados_adicionais.modelo }}</td>
+          </tr>
+          <tr>
+            <td>Cor</td>
+            <td>{{ dados_adicionais.cor }}</td>
+          </tr>
+          <tr>
+            <td>Ano do Modelo</td>
+            <td>{{ dados_adicionais.ano_modelo }}</td>
+          </tr>
+          <tr>
+            <td>Ano de Fabricação</td>
+            <td>{{ dados_adicionais.ano_fabricacao }}</td>
+          </tr>
+          <tr>
+            <td>Combustível</td>
+            <td>{{ dados_adicionais.combustivel }}</td>
+          </tr>
+          <tr>
+            <td>Condição</td>
+            <td>{{ dados_adicionais.condicao }}</td>
+          </tr>
+          {% if dados_adicionais.placa != 'N/A' %}
+          <tr>
+            <td>Placa</td>
+            <td>{{ dados_adicionais.placa }}</td>
+          </tr>
+          {% endif %}
+          {% if dados_adicionais.renavam != 'N/A' %}
+          <tr>
+            <td>RENAVAM</td>
+            <td>{{ dados_adicionais.renavam }}</td>
+          </tr>
+          {% endif %}
+          {% if valor_fipe %}
+          <tr>
+            <td>Código FIPE</td>
+            <td>{{ valor_fipe.codigo_fipe }}</td>
+          </tr>
+          <tr>
+            <td>Mês Referência FIPE</td>
+            <td>{{ valor_fipe.mes_referencia }}</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <section class="actions">
+      <a href="https://leilao.detran.mg.gov.br/lotes/detalhes/{{ detran_id }}" 
+         target="_blank" rel="noopener" 
+         class="btn btn-primary">
+        <i class="fas fa-external-link-alt"></i>
+        Ver no site do Detran MG
+      </a>
+      
+      <button onclick="window.history.back()" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>
+        Voltar
+      </button>
+      
+      <button onclick="shareLote()" class="btn btn-secondary">
+        <i class="fas fa-share"></i>
+        Compartilhar
+      </button>
+      
+      <button onclick="printPage()" class="btn btn-secondary">
+        <i class="fas fa-print"></i>
+        Imprimir
+      </button>
+    </section>
+  </main>
+
+  <script>
+    // Galeria de imagens
+    function trocarImagem(src, element) {
+      document.getElementById('imagem-principal').src = src;
+      
+      // Remove active de todas as miniaturas
+      document.querySelectorAll('.miniatura').forEach(mini => {
+        mini.classList.remove('active');
+      });
+      
+      // Adiciona active na miniatura clicada
+      element.classList.add('active');
+    }
+    
+    function abrirImagem(src) {
+      window.open(src, '_blank');
+    }
+    
+    // Contador de tempo restante (mock)
+    function atualizarContador() {
+      const agora = new Date();
+      const fim = new Date();
+      fim.setDate(fim.getDate() + 2); // Mock: termina em 2 dias
+      
+      const diff = fim - agora;
+      
+      if (diff > 0) {
+        const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        
+        document.getElementById('contador').textContent = `${dias}d ${horas}h ${minutos}m`;
+      } else {
+        document.getElementById('contador').textContent = 'Encerrado';
+      }
+    }
+    
+    // Compartilhamento
+    function shareLote() {
+      const url = window.location.href;
+      const title = document.querySelector('.lote-title').textContent;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: title,
+          url: url
+        });
+      } else {
+        navigator.clipboard.writeText(url);
+        alert('Link copiado para a área de transferência!');
+      }
+    }
+    
+    // Imprimir
+    function printPage() {
+      window.print();
+    }
+    
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+      atualizarContador();
+      setInterval(atualizarContador, 60000); // Atualiza a cada minuto
+    });
+  </script>
+</body>
+</html>
