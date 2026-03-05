@@ -150,6 +150,15 @@
     }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
+    .card-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .card-link:hover .card {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
     .empty {
       margin-top: 1.5rem;
       color: var(--muted);
@@ -206,6 +215,7 @@
       <div class="cards">
         {% for v in veiculos %}
         {% set is_sucata = "SUCATA" in v.titulo.upper() %}
+        <a href="{{ request.url_for('pagina_lote_detalhes', lote_id=v.id) }}" class="card-link">
         <article class="card {% if is_sucata %}card-sucata{% endif %}">
           <div class="carousel" data-index="0">
             {% set imagens = v.imagens or ([] if not v.imagem_url else [v.imagem_url]) %}
@@ -238,6 +248,7 @@
             {% endif %}
           </div>
         </article>
+        </a>
         {% endfor %}
       </div>
     </section>
