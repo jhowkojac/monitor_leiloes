@@ -100,9 +100,11 @@ from app.routers.dashboard import router as dashboard_router
 app.include_router(dashboard_router)
 from app.routers.recaptcha import router as recaptcha_router
 app.include_router(recaptcha_router, prefix="/api", tags=["recaptcha"])
+from app.routers.pwa import router as pwa_router
+app.include_router(pwa_router, prefix="/api/pwa", tags=["pwa"])
 
 # Serve arquivos estáticos (se necessário)
-# app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
     import uvicorn
