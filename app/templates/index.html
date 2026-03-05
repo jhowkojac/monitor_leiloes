@@ -102,6 +102,7 @@
       color: inherit;
       display: block;
       height: 100%;
+      width: 100%;
     }
     .card-link:hover .card {
       transform: translateY(-4px);
@@ -116,9 +117,22 @@
       height: 100%;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: flex-start;
+      min-height: 450px;
+      width: 100%;
     }
     .card:hover { border-color: var(--accent-dim); }
+    .card-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+    }
+    .card-footer {
+      margin-top: auto;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
     .card h3 {
       font-size: 1rem;
       font-weight: 600;
@@ -159,7 +173,8 @@
       overflow: hidden;
       border: 1px solid #22222a;
       background: #101015;
-      height: 180px;
+      height: 200px;
+      width: 100%;
     }
     .carousel-slides {
       display: flex;
@@ -191,6 +206,7 @@
       padding: 0 0.25rem;
       transform: translateY(-50%);
       pointer-events: none;
+      z-index: 10;
     }
     .carousel-btn {
       pointer-events: auto;
@@ -235,6 +251,9 @@
       .grid {
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       }
+      .card {
+        min-height: 420px;
+      }
     }
     @media (max-width: 768px) {
       .grid {
@@ -243,12 +262,23 @@
       }
       .card {
         padding: 1rem;
+        min-height: 400px;
+      }
+      .carousel {
+        height: 180px;
       }
     }
     @media (max-width: 480px) {
       .grid {
         grid-template-columns: 1fr;
         gap: 1rem;
+      }
+      .card {
+        min-height: auto;
+        padding: 1rem;
+      }
+      .carousel {
+        height: 160px;
       }
     }
   </style>
@@ -324,22 +354,24 @@
           </div>
           {% endif %}
         </div>
-        <h3>{{ leilao.titulo }}</h3>
-        <div class="meta">
-          {% if leilao.cidade %}{{ leilao.cidade }} · {% endif %}
-          <span class="estado-{{ leilao.estado.value|lower }}">{{ leilao.estado.value }}</span>
-          · {{ leilao.fonte.value }}
+        <div class="card-content">
+          <h3>{{ leilao.titulo }}</h3>
+          <div class="meta">
+            {% if leilao.cidade %}{{ leilao.cidade }} · {% endif %}
+            <span class="estado-{{ leilao.estado.value|lower }}">{{ leilao.estado.value }}</span>
+            · {{ leilao.fonte.value }}
+          </div>
+          {% if leilao.valor_inicial %}
+          <div class="valor">R$ {{ "%.2f"|format(leilao.valor_inicial)|replace(".", ",") }}</div>
+          {% if leilao.valor_atual and leilao.valor_atual != leilao.valor_inicial %}
+          <div class="valor-atual">Atual: R$ {{ "%.2f"|format(leilao.valor_atual)|replace(".", ",") }}</div>
+          {% endif %}
+          {% endif %}
+          {% if leilao.data_leilao %}
+          <div class="footer-meta">Data do leilão: {{ leilao.data_leilao.strftime("%d/%m/%Y") }}</div>
+          {% endif %}
         </div>
-        {% if leilao.valor_inicial %}
-        <div class="valor">R$ {{ "%.2f"|format(leilao.valor_inicial)|replace(".", ",") }}</div>
-        {% if leilao.valor_atual and leilao.valor_atual != leilao.valor_inicial %}
-        <div class="valor-atual">Atual: R$ {{ "%.2f"|format(leilao.valor_atual)|replace(".", ",") }}</div>
-        {% endif %}
-        {% endif %}
-        {% if leilao.data_leilao %}
-        <div class="footer-meta">Data do leilão: {{ leilao.data_leilao.strftime("%d/%m/%Y") }}</div>
-        {% endif %}
-        <div class="footer-meta">
+        <div class="card-footer">
           <a href="{{ request.url_for('pagina_edital', id_=leilao.id) }}" style="font-weight: 600;">Ver detalhes →</a>
         </div>
       </article>
