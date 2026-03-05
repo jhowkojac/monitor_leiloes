@@ -83,6 +83,8 @@ app.include_router(router)
 app.include_router(auth_router)
 from app.routers.two_factor import router as two_factor_router
 app.include_router(two_factor_router)
+from app.routers.dashboard import router as dashboard_router
+app.include_router(dashboard_router)
 
 # Serve arquivos estáticos (se necessário)
 # app.mount("/static", StaticFiles(directory="static"), name="static")

@@ -42,6 +42,25 @@ async def pagina_setup_2fa(request: Request):
     return templates.TemplateResponse("setup_2fa.html", {"request": request})
 
 
+@router.get("/dashboard", response_class=HTMLResponse)
+async def pagina_dashboard(request: Request):
+    """Página do dashboard administrativo."""
+    # Verificar se está logado
+    user = get_current_user_optional(request)
+    if not user:
+        # Não está logado, redirecionar para login
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login", status_code=302)
+    
+    # Verificar se é admin
+    if not user.get("is_admin", False):
+        # Não é admin, redirecionar para página inicial
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/", status_code=302)
+    
+    return templates.TemplateResponse("dashboard.html", {"request": request})
+
+
 @router.get("/", response_class=HTMLResponse)
 async def pagina_inicial(request: Request):
     """Página principal com listagem de leilões (editais)."""

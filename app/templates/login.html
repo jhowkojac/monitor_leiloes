@@ -276,6 +276,7 @@
       
       <div class="back-link">
         <a href="/">← Voltar para o início</a>
+        <a href="/dashboard" id="dashboard-link" style="display: none;">→ Dashboard</a>
       </div>
     </div>
   </div>
@@ -412,6 +413,11 @@
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Mostrar link do dashboard se for admin
+        if (data.user.is_admin) {
+          document.getElementById('dashboard-link').style.display = 'inline';
+        }
       }
       
       redirectToDashboard() {
