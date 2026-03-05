@@ -161,6 +161,16 @@ class TestPaginaEdital:
             response = client.get("/veiculos/test_id")
             # Pode retornar 404, mas não deve quebrar
             assert response.status_code in [200, 404]
+            
+            # Se retornar 200, verifica elementos do novo template
+            if response.status_code == 200:
+                assert "text/html" in response.headers["content-type"]
+                # Verifica se o carrossel está presente
+                assert "carrossel" in response.text
+                # Verifica se o pop-up está presente
+                assert "popup" in response.text
+                # Botão "Ver fotos" não deve estar presente
+                assert "Ver fotos em alta resolução" not in response.text
 
 
 class TestPerformance:

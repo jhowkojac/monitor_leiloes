@@ -44,7 +44,8 @@ class TestTemplates:
             
             # Verifica elementos específicos
             assert "Veículos deste edital" in response.text
-            assert "Ver fotos em alta resolução" in response.text
+            # Botão "Ver fotos em alta resolução" foi removido
+            assert "Ver fotos em alta resolução" not in response.text
     
     def test_template_veiculo_detalhes_render(self, client):
         """Testa renderização do template de detalhes do veículo"""
@@ -57,6 +58,12 @@ class TestTemplates:
         if response.status_code == 200:
             assert "text/html" in response.headers["content-type"]
             assert "Detalhes do Veículo" in response.text
+            # Verifica se o carrossel está presente
+            assert "carrossel" in response.text
+            # Verifica se o pop-up está presente
+            assert "popup" in response.text
+            # Botão "Ver fotos" não deve estar presente
+            assert "Ver fotos em alta resolução" not in response.text
     
     def test_template_css_classes(self, client):
         """Testa se classes CSS estão presentes"""
