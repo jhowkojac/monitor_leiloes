@@ -296,8 +296,6 @@
         {% if leilao.valor_atual and leilao.valor_atual != leilao.valor_inicial %}
         <div class="valor-atual">Atual: R$ {{ "%.2f"|format(leilao.valor_atual)|replace(".", ",") }}</div>
         {% endif %}
-        {% else %}
-        <div class="valor">Valor a consultar</div>
         {% endif %}
         {% if leilao.data_leilao %}
         <div class="footer-meta">Data do leilão: {{ leilao.data_leilao.strftime("%d/%m/%Y") }}</div>

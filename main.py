@@ -19,17 +19,17 @@ from app.security import (
 async def lifespan(app: FastAPI):
     """Gerencia o ciclo de vida da aplicação."""
     # Startup
-    print("🚀 Monitor de Leilões iniciando...")
-    print("📊 Serviços de leilões configurados")
-    print("🔒 Segurança configurada")
+    print("Monitor de Leiloes iniciando...")
+    print("Servicos de leiloes configurados")
+    print("Seguranca configurada")
     
     # Inicializa o cache com dados (em background para não bloquear)
     import asyncio
     try:
-        print("🔄 Inicializando cache com dados dos leilões...")
+        print("Inicializando cache com dados dos leiloes...")
         # Inicia em background para não bloquear startup
         task = asyncio.create_task(servico_leiloes.atualizar())
-        print("✅ Cache sendo inicializado em background...")
+        print("Cache sendo inicializado em background...")
         
         # Espera um pouco para ter dados iniciais
         await asyncio.sleep(3)
@@ -37,17 +37,17 @@ async def lifespan(app: FastAPI):
         # Força uma atualização para garantir dados
         try:
             await servico_leiloes.atualizar()
-            print("✅ Cache inicializado com sucesso!")
+            print("Cache inicializado com sucesso!")
         except Exception as e:
-            print(f"⚠️ Erro na atualização inicial: {e}")
+            print(f"Erro na atualizacao inicial: {e}")
             
     except Exception as e:
-        print(f"⚠️ Erro ao inicializar cache: {e}")
-        print("📝 Use /init para forçar atualização manual")
+        print(f"Erro ao inicializar cache: {e}")
+        print("Use /init para forcar atualizacao manual")
     
     yield
     # Shutdown
-    print("🛑 Monitor de Leilões encerrando...")
+    print("Monitor de Leiloes encerrando...")
 
 
 app = FastAPI(
@@ -63,10 +63,12 @@ app = FastAPI(
 # Em produção, todos os middlewares ativos
 # Em desenvolvimento, mais permissivo
 if os.getenv("ENVIRONMENT") == "production":
-    app.add_middleware(APITokenMiddleware, protected_paths=["/api/leiloes/atualizar"])
+    # Production: Adiciona APITokenMiddleware
+    app.add_middleware(APITokenMiddleware)
+    print("Modo producao: API Token ativado")
 else:
-    # Em desenvolvimento, sem proteção de token para facilitar testes
-    print("🔧 Modo desenvolvimento: API Token desativado")
+    # Development: Desativa APITokenMiddleware
+    print("Modo desenvolvimento: API Token desativado")
 
 app.add_middleware(InputValidationMiddleware)
 app.add_middleware(RateLimitMiddleware, calls=100, period=60)
