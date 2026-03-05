@@ -210,6 +210,159 @@
       line-height: 1.6;
     }
     
+    /* Carrossel de Imagens */
+    .carrossel-container {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    
+    .carrossel {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      overflow: hidden;
+    }
+    
+    .carrossel-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    
+    .carrossel-slide.active {
+      opacity: 1;
+    }
+    
+    .carrossel-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    
+    .carrossel-img:hover {
+      transform: scale(1.05);
+    }
+    
+    .carrossel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      z-index: 10;
+    }
+    
+    .carrossel-btn:hover {
+      background: rgba(0, 0, 0, 0.9);
+    }
+    
+    .carrossel-prev {
+      left: 10px;
+    }
+    
+    .carrossel-next {
+      right: 10px;
+    }
+    
+    .carrossel-indicadores {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    
+    .indicador {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    
+    .indicador.active {
+      background: var(--accent);
+    }
+    
+    /* Pop-up Modal */
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .popup-overlay.active {
+      display: flex;
+    }
+    
+    .popup-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      background: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .popup-img {
+      max-width: 100%;
+      max-height: 90vh;
+      object-fit: contain;
+    }
+    
+    .popup-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background 0.3s ease;
+    }
+    
+    .popup-close:hover {
+      background: rgba(0, 0, 0, 0.9);
+    }
+    
     @media (max-width: 768px) {
       .container { padding: 1rem; }
       .vehicle-header { padding: 1.5rem; }
@@ -242,6 +395,39 @@
       
       <h2 class="vehicle-title">{{ veiculo.titulo }}</h2>
       
+      <!-- Carrossel de Imagens -->
+      {% set imagens = veiculo.imagens or ([] if not veiculo.imagem_url else [veiculo.imagem_url]) %}
+      {% if imagens %}
+      <div class="carrossel-container">
+        <div class="carrossel" id="carrossel">
+          {% for img in imagens %}
+          <div class="carrossel-slide">
+            <img src="{{ img }}" alt="Foto do veículo {{ veiculo.titulo }}" onclick="abrirPopup('{{ img }}')" class="carrossel-img">
+          </div>
+          {% endfor %}
+        </div>
+        
+        <!-- Navegação do Carrossel -->
+        {% if imagens|length > 1 %}
+        <button class="carrossel-btn carrossel-prev" onclick="mudarSlide(-1)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="carrossel-btn carrossel-next" onclick="mudarSlide(1)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+        {% endif %}
+        
+        <!-- Indicadores -->
+        {% if imagens|length > 1 %}
+        <div class="carrossel-indicadores">
+          {% for img in imagens %}
+          <span class="indicador {% if loop.index0 == 0 %}active{% endif %}" onclick="irParaSlide({{ loop.index0 }})"></span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+      
       <div class="vehicle-meta">
         <div class="meta-item">
           <span class="meta-label">Estado</span>
@@ -266,20 +452,6 @@
       {% endif %}
     </section>
 
-    <section class="galeria-section">
-      <h3 class="galeria-title">
-        <i class="fas fa-images"></i>
-        Galeria de Fotos em Alta Resolução
-      </h3>
-      
-      <div class="galeria-grid" id="galeria-grid">
-        <div class="galeria-loading">
-          <i class="fas fa-spinner fa-spin"></i>
-          Carregando fotos em alta resolução...
-        </div>
-      </div>
-    </section>
-
     <section class="actions">
       <a href="https://leilao.detran.mg.gov.br/lotes/detalhes/{{ detran_id }}" 
          target="_blank" rel="noopener" 
@@ -299,6 +471,16 @@
       </button>
     </section>
   </main>
+
+  <!-- Pop-up Modal -->
+  <div class="popup-overlay" id="popup-overlay" onclick="fecharPopup()">
+    <div class="popup-content">
+      <button class="popup-close" onclick="fecharPopup()">
+        <i class="fas fa-times"></i>
+      </button>
+      <img src="" alt="Imagem em alta resolução" class="popup-img" id="popup-img">
+    </div>
+  </div>
 
   <script>
     // Buscar fotos em alta resolução da página do Detran
@@ -362,6 +544,88 @@
     
     // Carregar fotos quando a página carregar
     document.addEventListener('DOMContentLoaded', carregarFotosAltaResolucao);
+  </script>
+
+  <script>
+    // Carrossel functionality
+    let slideAtual = 0;
+    const slides = document.querySelectorAll('.carrossel-slide');
+    const totalSlides = slides.length;
+    
+    function mostrarSlide(indice) {
+      slides.forEach((slide, index) => {
+        slide.classList.toggle('active', index === indice);
+      });
+      
+      // Atualizar indicadores
+      const indicadores = document.querySelectorAll('.indicador');
+      indicadores.forEach((indicador, index) => {
+        indicador.classList.toggle('active', index === indice);
+      });
+    }
+    
+    function mudarSlide(direcao) {
+      slideAtual += direcao;
+      if (slideAtual < 0) slideAtual = totalSlides - 1;
+      if (slideAtual >= totalSlides) slideAtual = 0;
+      mostrarSlide(slideAtual);
+    }
+    
+    function irParaSlide(indice) {
+      slideAtual = indice;
+      mostrarSlide(slideAtual);
+    }
+    
+    // Pop-up functionality
+    function abrirPopup(imagemSrc) {
+      const popup = document.getElementById('popup-overlay');
+      const popupImg = document.getElementById('popup-img');
+      popupImg.src = imagemSrc;
+      popup.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function fecharPopup() {
+      const popup = document.getElementById('popup-overlay');
+      popup.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+    
+    // Share functionality
+    function shareVehicle() {
+      const url = window.location.href;
+      const title = document.querySelector('.vehicle-title').textContent;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: title,
+          url: url
+        });
+      } else {
+        // Fallback para desktop
+        navigator.clipboard.writeText(url);
+        alert('Link copiado para a área de transferência!');
+      }
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      const popup = document.getElementById('popup-overlay');
+      if (popup.classList.contains('active')) {
+        if (e.key === 'Escape') fecharPopup();
+      } else {
+        if (e.key === 'ArrowLeft') mudarSlide(-1);
+        if (e.key === 'ArrowRight') mudarSlide(1);
+      }
+      }
+    );
+    
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => {
+      if (totalSlides > 0) {
+        mostrarSlide(0);
+      }
+    });
   </script>
 </body>
 </html>
