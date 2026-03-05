@@ -133,12 +133,12 @@ async def pagina_edital(id_: str, request: Request):
 
 @router.get("/api/leiloes")
 async def api_listar_leiloes(
-    estado: Optional[Estado] = None,
+    estado: Optional[str] = None,
     fonte: Optional[str] = None,
     cidade: Optional[str] = None,
 ):
     """API: lista leilões com filtros opcionais."""
-    itens = servico_leiloes.listar(estado=estado, fonte=fonte, cidade=cidade)
+    itens = servico_leiloes.listar(estado=Estado(estado) if estado else None, fonte=fonte, cidade=cidade)
     return {"total": len(itens), "leiloes": itens}
 
 

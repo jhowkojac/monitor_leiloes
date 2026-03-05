@@ -44,7 +44,7 @@ class UserResponse(BaseModel):
     created_at: str
 
 
-@router.post("/login", response_model=LoginResponse)
+@router.post("/login")
 async def login(
     login_data: LoginRequest,
     db: Session = Depends(get_db)
@@ -89,7 +89,7 @@ async def login(
         )
 
 
-@router.post("/refresh", response_model=RefreshResponse)
+@router.post("/refresh")
 async def refresh_token(
     refresh_data: RefreshRequest
 ):
@@ -131,7 +131,7 @@ async def logout(
     return {"message": "Logout realizado com sucesso"}
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me")
 async def get_current_user_info(
     request: Request
 ):
