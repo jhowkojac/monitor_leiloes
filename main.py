@@ -15,6 +15,8 @@ from app.security import (
     APITokenMiddleware
 )
 from app.middleware.auth import AuthMiddleware
+from app.middleware.bot_protection import BotProtectionMiddleware
+from app.services.recaptcha import recaptcha_config
 
 
 @asynccontextmanager
@@ -77,6 +79,15 @@ app.add_middleware(RateLimitMiddleware, calls=100, period=60)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 
+# Adicionar middleware de proteção contra bots
+if recaptcha_config.is_configured():
+    app.add_middleware(BotProtectionMiddleware, 
+                      secret_key=recaptcha_config.secret_key,
+                      min_score=recaptcha_config.min_score)
+    print("Proteção contra bots ativada (reCAPTCHA v3)")
+else:
+    print("Proteção contra bots desativada (reCAPTCHA não configurado)")
+
 # Adicionar middleware de autenticação
 app.add_middleware(AuthMiddleware)
 
@@ -87,6 +98,8 @@ from app.routers.two_factor import router as two_factor_router
 app.include_router(two_factor_router)
 from app.routers.dashboard import router as dashboard_router
 app.include_router(dashboard_router)
+from app.routers.recaptcha import router as recaptcha_router
+app.include_router(recaptcha_router, prefix="/api", tags=["recaptcha"])
 
 # Serve arquivos estáticos (se necessário)
 # app.mount("/static", StaticFiles(directory="static"), name="static")

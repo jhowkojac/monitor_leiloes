@@ -1,0 +1,118 @@
+"""
+reCAPTCHA v3 Frontend Integration
+"""
+<script>
+// reCAPTCHA v3 Integration
+class RecaptchaHandler {
+    constructor() {
+        this.siteKey = window.recaptchaConfig?.siteKey || '';
+        this.enabled = window.recaptchaConfig?.enabled || false;
+        this.minScore = window.recaptchaConfig?.minScore || 0.5;
+        this.isReady = false;
+    }
+
+    async init() {
+        if (!this.enabled || !this.siteKey) {
+            console.log('reCAPTCHA desativado ou não configurado');
+            return;
+        }
+
+        // Aguardar o script do reCAPTCHA carregar
+        if (typeof grecaptcha === 'undefined') {
+            await this.waitForRecaptcha();
+        }
+
+        this.isReady = true;
+        console.log('reCAPTCHA v3 inicializado');
+    }
+
+    waitForRecaptcha() {
+        return new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+                if (typeof grecaptcha !== 'undefined') {
+                    clearInterval(checkInterval);
+                    resolve();
+                }
+            }, 100);
+        });
+    }
+
+    async execute(action = 'submit') {
+        if (!this.isReady || !this.enabled) {
+            return null;
+        }
+
+        try {
+            const token = await grecaptcha.execute(this.siteKey, {
+                action: action
+            });
+            return token;
+        } catch (error) {
+            console.error('Erro ao executar reCAPTCHA:', error);
+            return null;
+        }
+    }
+
+    async protectForm(form, action = 'submit') {
+        if (!this.enabled) {
+            return true;
+        }
+
+        const token = await this.execute(action);
+        if (!token) {
+            console.error('Falha ao obter token do reCAPTCHA');
+            return false;
+        }
+
+        // Adicionar token ao form
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'recaptcha_token';
+        hiddenInput.value = token;
+        form.appendChild(hiddenInput);
+
+        return true;
+    }
+
+    async protectApiCall(action = 'api_call') {
+        if (!this.enabled) {
+            return null;
+        }
+
+        return await this.execute(action);
+    }
+}
+
+// Instância global
+window.recaptchaHandler = new RecaptchaHandler();
+
+// Inicializar quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', () => {
+    window.recaptchaHandler.init();
+});
+
+// Funções auxiliares para formulários
+window.addRecaptchaProtection = async (formId, action = 'submit') => {
+    const form = document.getElementById(formId);
+    if (!form) {
+        console.error(`Formulário #${formId} não encontrado`);
+        return;
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const success = await window.recaptchaHandler.protectForm(form, action);
+        if (success) {
+            form.submit();
+        } else {
+            alert('Falha na verificação de segurança. Tente novamente.');
+        }
+    });
+};
+
+// Para chamadas API
+window.getRecaptchaToken = async (action = 'api_call') => {
+    return await window.recaptchaHandler.protectApiCall(action);
+};
+</script>
