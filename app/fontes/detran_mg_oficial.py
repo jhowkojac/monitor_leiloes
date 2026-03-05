@@ -19,9 +19,9 @@ from app.models import Estado, FonteLeilao, VeiculoLeilao
 
 
 BASE_URL = "https://leilao.detran.mg.gov.br/"
-# Para evitar deixar a página muito lenta, limitamos quantos editais
-# serão varridos a cada atualização.
-MAX_EDITAIS = 5
+# Busca todos os leilões em aberto sem limite
+# para ter dados completos do sistema
+MAX_EDITAIS = 999  # Praticamente sem limite
 
 
 class FonteDetranMGOficial(FonteLeilaoBase):

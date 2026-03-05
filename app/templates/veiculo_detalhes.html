@@ -49,13 +49,21 @@
       color: var(--text);
     }
     .breadcrumbs {
-      font-size: 0.85rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      font-size: 0.875rem;
       color: var(--muted);
-      margin-bottom: 1rem;
     }
-    .breadcrumbs a { color: var(--accent); text-decoration: none; }
-    .breadcrumbs a:hover { text-decoration: underline; }
-    
+    .breadcrumbs a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
     .vehicle-header {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -63,17 +71,27 @@
       padding: 2rem;
       margin-bottom: 2rem;
     }
-    .vehicle-title {
-      font-size: 1.8rem;
-      font-weight: 700;
+    .sucata-badge {
+      background: var(--error);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
       margin-bottom: 1rem;
+      display: inline-block;
+    }
+    .vehicle-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
       color: var(--text);
     }
     .vehicle-meta {
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
     }
     .meta-item {
       display: flex;
@@ -91,64 +109,165 @@
       color: var(--text);
     }
     .valor-destaque {
-      color: var(--success);
-      font-size: 1.5rem;
+      color: var(--accent);
+      font-size: 1.25rem;
     }
-    .sucata-badge {
-      display: inline-block;
-      background: var(--error);
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 1rem;
+    .descricao-text {
+      color: var(--text);
+      line-height: 1.6;
     }
     
-    .galeria-section {
+    /* Carrossel de Imagens */
+    .carrossel-container {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      border-radius: 12px;
+      overflow: hidden;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 2rem;
     }
-    .galeria-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .galeria-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1rem;
-    }
-    .galeria-item {
+    
+    .carrossel {
       position: relative;
-      border-radius: 8px;
+      width: 100%;
+      height: 400px;
       overflow: hidden;
-      background: #050507;
-      aspect-ratio: 4/3;
     }
-    .galeria-item img {
+    
+    .carrossel-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    
+    .carrossel-slide.active {
+      opacity: 1;
+    }
+    
+    .carrossel-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      cursor: pointer;
       transition: transform 0.3s ease;
     }
-    .galeria-item:hover img {
+    
+    .carrossel-img:hover {
       transform: scale(1.05);
     }
-    .galeria-loading {
+    
+    .carrossel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 200px;
-      color: var(--muted);
+      cursor: pointer;
+      transition: background 0.3s ease;
+      z-index: 10;
+    }
+    
+    .carrossel-btn:hover {
+      background: rgba(0, 0, 0, 0.9);
+    }
+    
+    .carrossel-prev {
+      left: 10px;
+    }
+    
+    .carrossel-next {
+      right: 10px;
+    }
+    
+    .carrossel-indicadores {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    
+    .indicador {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    
+    .indicador.active {
+      background: var(--accent);
+    }
+    
+    /* Pop-up Modal */
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .popup-overlay.active {
+      display: flex;
+    }
+    
+    .popup-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      background: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .popup-img {
+      max-width: 100%;
+      max-height: 90vh;
+      object-fit: contain;
+    }
+    
+    .popup-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background 0.3s ease;
+    }
+    
+    .popup-close:hover {
+      background: rgba(0, 0, 0, 0.9);
     }
     
     .actions {
@@ -193,28 +312,10 @@
       font-size: 1rem;
     }
     
-    .descricao-section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-    .descricao-title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-    .descricao-text {
-      color: var(--text);
-      line-height: 1.6;
-    }
-    
     @media (max-width: 768px) {
       .container { padding: 1rem; }
       .vehicle-header { padding: 1.5rem; }
       .vehicle-title { font-size: 1.5rem; }
-      .galeria-grid { grid-template-columns: 1fr; }
       .actions { flex-direction: column; }
       .btn { width: 100%; justify-content: center; }
     }
@@ -242,6 +343,39 @@
       
       <h2 class="vehicle-title">{{ veiculo.titulo }}</h2>
       
+      <!-- Carrossel de Imagens -->
+      {% set imagens = veiculo.imagens or ([] if not veiculo.imagem_url else [veiculo.imagem_url]) %}
+      {% if imagens %}
+      <div class="carrossel-container">
+        <div class="carrossel" id="carrossel">
+          {% for img in imagens %}
+          <div class="carrossel-slide {% if loop.index0 == 0 %}active{% endif %}">
+            <img src="{{ img }}" alt="Foto do veículo {{ veiculo.titulo }}" onclick="abrirPopup('{{ img }}')" class="carrossel-img">
+          </div>
+          {% endfor %}
+        </div>
+        
+        <!-- Navegação do Carrossel -->
+        {% if imagens|length > 1 %}
+        <button class="carrossel-btn carrossel-prev" onclick="mudarSlide(-1)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="carrossel-btn carrossel-next" onclick="mudarSlide(1)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+        {% endif %}
+        
+        <!-- Indicadores -->
+        {% if imagens|length > 1 %}
+        <div class="carrossel-indicadores">
+          {% for img in imagens %}
+          <span class="indicador {% if loop.index0 == 0 %}active{% endif %}" onclick="irParaSlide({{ loop.index0 }})"></span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+      
       <div class="vehicle-meta">
         <div class="meta-item">
           <span class="meta-label">Estado</span>
@@ -266,20 +400,6 @@
       {% endif %}
     </section>
 
-    <section class="galeria-section">
-      <h3 class="galeria-title">
-        <i class="fas fa-images"></i>
-        Galeria de Fotos em Alta Resolução
-      </h3>
-      
-      <div class="galeria-grid" id="galeria-grid">
-        <div class="galeria-loading">
-          <i class="fas fa-spinner fa-spin"></i>
-          Carregando fotos em alta resolução...
-        </div>
-      </div>
-    </section>
-
     <section class="actions">
       <a href="https://leilao.detran.mg.gov.br/lotes/detalhes/{{ detran_id }}" 
          target="_blank" rel="noopener" 
@@ -300,68 +420,96 @@
     </section>
   </main>
 
+  <!-- Pop-up Modal -->
+  <div class="popup-overlay" id="popup-overlay" onclick="fecharPopup()">
+    <div class="popup-content">
+      <button class="popup-close" onclick="fecharPopup()">
+        <i class="fas fa-times"></i>
+      </button>
+      <img src="" alt="Imagem em alta resolução" class="popup-img" id="popup-img">
+    </div>
+  </div>
+
   <script>
-    // Buscar fotos em alta resolução da página do Detran
-    async function carregarFotosAltaResolucao() {
-      const galeriaGrid = document.getElementById('galeria-grid');
+    // Carrossel functionality
+    let slideAtual = 0;
+    const slides = document.querySelectorAll('.carrossel-slide');
+    const totalSlides = slides.length;
+    
+    function mostrarSlide(indice) {
+      slides.forEach((slide, index) => {
+        slide.classList.toggle('active', index === indice);
+      });
       
-      try {
-        const response = await fetch(`https://leilao.detran.mg.gov.br/lotes/detalhes/{{ detran_id }}`);
-        const html = await response.text();
-        
-        // Criar parser DOM
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        
-        // Buscar todas as imagens na página
-        const imagens = doc.querySelectorAll('img[src*="Imagens/visualizar"]');
-        const galeriaHtml = [];
-        
-        imagens.forEach((img, index) => {
-          let src = img.getAttribute('src');
-          if (src && src.startsWith('/../')) {
-            src = src.replace('/../', '/leilao/');
-          }
-          if (src && src.startsWith('/')) {
-            src = 'https://leilao.detran.mg.gov.br' + src;
-          }
-          
-          galeriaHtml.push(`
-            <div class="galeria-item">
-              <img src="${src}" alt="Foto ${index + 1} do veículo" loading="lazy">
-            </div>
-          `);
-        });
-        
-        if (galeriaHtml.length > 0) {
-          galeriaGrid.innerHTML = galeriaHtml.join('');
-        } else {
-          galeriaGrid.innerHTML = '<div class="galeria-loading">❌ Fotos não encontradas</div>';
-        }
-        
-      } catch (error) {
-        console.error('Erro ao carregar fotos:', error);
-        galeriaGrid.innerHTML = '<div class="galeria-loading">❌ Erro ao carregar fotos</div>';
-      }
+      // Atualizar indicadores
+      const indicadores = document.querySelectorAll('.indicador');
+      indicadores.forEach((indicador, index) => {
+        indicador.classList.toggle('active', index === indice);
+      });
     }
     
-    // Compartilhamento
+    function mudarSlide(direcao) {
+      slideAtual += direcao;
+      if (slideAtual < 0) slideAtual = totalSlides - 1;
+      if (slideAtual >= totalSlides) slideAtual = 0;
+      mostrarSlide(slideAtual);
+    }
+    
+    function irParaSlide(indice) {
+      slideAtual = indice;
+      mostrarSlide(slideAtual);
+    }
+    
+    // Pop-up functionality
+    function abrirPopup(imagemSrc) {
+      const popup = document.getElementById('popup-overlay');
+      const popupImg = document.getElementById('popup-img');
+      popupImg.src = imagemSrc;
+      popup.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function fecharPopup() {
+      const popup = document.getElementById('popup-overlay');
+      popup.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+    
+    // Share functionality
     function shareVehicle() {
+      const url = window.location.href;
+      const title = document.querySelector('.vehicle-title').textContent;
+      
       if (navigator.share) {
         navigator.share({
-          title: '{{ veiculo.titulo }}',
-          text: 'Veículo em leilão no Detran MG',
-          url: window.location.href
+          title: title,
+          url: url
         });
       } else {
-        // Fallback para navegadores que não suportam Web Share API
-        navigator.clipboard.writeText(window.location.href);
+        // Fallback para desktop
+        navigator.clipboard.writeText(url);
         alert('Link copiado para a área de transferência!');
       }
     }
     
-    // Carregar fotos quando a página carregar
-    document.addEventListener('DOMContentLoaded', carregarFotosAltaResolucao);
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      const popup = document.getElementById('popup-overlay');
+      if (popup.classList.contains('active')) {
+        if (e.key === 'Escape') fecharPopup();
+      } else {
+        if (e.key === 'ArrowLeft') mudarSlide(-1);
+        if (e.key === 'ArrowRight') mudarSlide(1);
+      }
+      }
+    });
+    
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => {
+      if (totalSlides > 0) {
+        mostrarSlide(0);
+      }
+    });
   </script>
 </body>
 </html>

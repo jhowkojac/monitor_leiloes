@@ -242,22 +242,22 @@
       <button type="button" id="filtrar">Filtrar</button>
       <button type="button" id="atualizar" class="secondary">Atualizar lista</button>
     </div>
+    <div class="leiloes-header">
+      <h2>📋 Leilões Disponíveis</h2>
+      <div class="leiloes-stats">
+        <span class="stat">
+          <strong>{{ total }}</strong> leilões encontrados
+        </span>
+        {% if total > 0 %}
+        <span class="stat">
+          <strong>{{ leiloes | selectattr('valor_inicial') | map(attribute='valor_inicial') | selectattr('defined') | list | length }}</strong> com valores
+        </span>
+        {% endif %}
+      </div>
+    </div>
     <div id="lista" class="grid">
       {% for leilao in leiloes %}
       <article class="card" data-estado="{{ leilao.estado.value }}" data-fonte="{{ leilao.fonte.value }}" data-cidade="{{ (leilao.cidade or '')|lower }}">
-        <div class="leiloes-header">
-                <h2>📋 Leilões Disponíveis</h2>
-                <div class="leiloes-stats">
-                    <span class="stat">
-                        <strong>{{ total }}</strong> leilões encontrados
-                    </span>
-                    {% if total > 0 %}
-                    <span class="stat">
-                        <strong>{{ leiloes | selectattr('valor_inicial') | map(attribute='valor_inicial') | selectattr('defined') | list | length }}</strong> com valores
-                    </span>
-                    {% endif %}
-                </div>
-            </div>
         <div class="carousel" data-index="0">
           {% set imagens = leilao.imagens or ([] if not leilao.imagem_url else [leilao.imagem_url]) %}
           {% if imagens %}
@@ -296,8 +296,6 @@
         {% if leilao.valor_atual and leilao.valor_atual != leilao.valor_inicial %}
         <div class="valor-atual">Atual: R$ {{ "%.2f"|format(leilao.valor_atual)|replace(".", ",") }}</div>
         {% endif %}
-        {% else %}
-        <div class="valor">Valor a consultar</div>
         {% endif %}
         {% if leilao.data_leilao %}
         <div class="footer-meta">Data do leilão: {{ leilao.data_leilao.strftime("%d/%m/%Y") }}</div>
