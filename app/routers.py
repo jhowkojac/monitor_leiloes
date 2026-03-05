@@ -234,9 +234,36 @@ async def pagina_veiculo_detalhes(veiculo_id: str, request: Request):
                 if veiculo_encontrado:
                     break
         
+        # Se não encontrou, tenta busca mais ampla
+        if not veiculo_encontrado:
+            print(f"🔄 Busca ampla - tentando encontrar em todos os editais...")
+            from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
+            
+            # Busca todos os leilões novamente
+            todos_leiloes = await fonte_detran_mg_oficial.listar_leiloes()
+            
+            for leilao in todos_leiloes:
+                if veiculo_id in leilao.id:
+                    print(f"🔍 Verificando edital: {leilao.titulo}")
+                    veiculos = await fonte_detran_mg_oficial.listar_veiculos_do_edital(leilao.url)
+                    
+                    for veiculo in veiculos:
+                        if veiculo.id == veiculo_id:
+                            veiculo_encontrado = veiculo
+                            edital_encontrado = leilao
+                            print(f"✅ Veículo encontrado na busca ampla: {veiculo.titulo}")
+                            break
+                    
+                    if veiculo_encontrado:
+                        break
+        
         if not veiculo_encontrado:
             print(f"❌ Veículo não encontrado em nenhum edital")
+            print(f"💡 Dicas: Verifique se o ID está correto ou se o veículo ainda está disponível")
             raise HTTPException(status_code=404, detail="Veículo não encontrado")
+        
+        # Extrai o detran_id para o template
+        detran_id = veiculo_id.replace("detran_mg_edital_veiculo_", "").split("_", 3)[-1]
         
         return templates.TemplateResponse(
             "veiculo_detalhes.html",
@@ -245,6 +272,7 @@ async def pagina_veiculo_detalhes(veiculo_id: str, request: Request):
                 "veiculo": veiculo_encontrado,
                 "edital": edital_encontrado,
                 "veiculo_id": veiculo_id,
+                "detran_id": detran_id,
             },
         )
         
