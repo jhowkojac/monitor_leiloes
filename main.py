@@ -1,12 +1,10 @@
 """Monitor de Leilões - FastAPI Application"""
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-
-from app.routers import router
-from app.routers.auth import router as auth_router
-from app.servico import servico_leiloes
+from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from app.security import (
     SecurityHeadersMiddleware,
     RateLimitMiddleware,
@@ -118,6 +116,15 @@ from app.routers.analytics import router as analytics_router
 app.include_router(analytics_router, prefix="/api/analytics", tags=["analytics"])
 from app.routers.theme import router as theme_router
 app.include_router(theme_router, prefix="/api/theme", tags=["theme"])
+
+# Dashboard route
+from fastapi import Request
+from fastapi.responses import HTMLResponse
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard_page(request: Request):
+    """Página do dashboard administrativo."""
+    return templates.TemplateResponse("dashboard.html", {"request": request})
 
 # Serve arquivos estáticos (se necessário)
 app.mount("/static", StaticFiles(directory="static"), name="static")

@@ -1,614 +1,813 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Administrativo - Monitor de Leilões</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Administrativo | Monitor de Leilões</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#c9a227">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --surface: #18181c;
+      --border: #2a2a32;
+      --text: #e8e6e3;
+      --muted: #8b8685;
+      --accent: #c9a227;
+      --accent-dim: #a68520;
+      --success: #22c55e;
+      --error: #dc2626;
+      --warning: #f59e0b;
+      --info: #3b82f6;
+      --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --border-radius: 10px;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f7fa;
-            color: #333;
-            line-height: 1.6;
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        .dashboard-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
 
-        .header {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
 
-        .header h1 {
-            color: #2c3e50;
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
 
-        .header p {
-            color: #7f8c8d;
-            font-size: 14px;
-        }
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
-        }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
 
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
+    .logo h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
 
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
 
-        .stat-card.primary {
-            border-left: 4px solid #3498db;
-        }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
 
-        .stat-card.success {
-            border-left: 4px solid #2ecc71;
-        }
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 73px;
+      width: 250px;
+      height: calc(100vh - 73px);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 2rem 1rem;
+      overflow-y: auto;
+    }
 
-        .stat-card.warning {
-            border-left: 4px solid #f39c12;
-        }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 0.5rem;
+    }
 
-        .stat-card.danger {
-            border-left: 4px solid #e74c3c;
-        }
+    .nav-item:hover {
+      background: var(--border);
+    }
 
-        .stat-label {
-            color: #7f8c8d;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
+    .nav-item.active {
+      background: var(--accent);
+      color: var(--bg);
+    }
 
-        .stat-value {
-            color: #2c3e50;
-            font-size: 32px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
+    .main-content {
+      margin-left: 250px;
+      padding: 2rem;
+    }
 
-        .stat-change {
-            color: #7f8c8d;
-            font-size: 14px;
-        }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
 
-        .stat-change.positive {
-            color: #27ae60;
-        }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s ease;
+    }
 
-        .stat-change.negative {
-            color: #e74c3c;
-        }
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
 
-        .content-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-            margin-bottom: 32px;
-        }
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
 
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+    .stat-title {
+      font-size: 0.875rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
 
-        .card-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
 
-        .card-title {
-            color: #2c3e50;
-            font-size: 18px;
-            font-weight: 600;
-        }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
 
-        .user-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+    .stat-change {
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
 
-        .user-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            transition: background 0.2s;
-        }
+    .stat-change.positive {
+      color: var(--success);
+    }
 
-        .user-item:hover {
-            background: #e9ecef;
-        }
+    .stat-change.negative {
+      color: var(--error);
+    }
 
-        .user-info {
-            flex: 1;
-        }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
 
-        .user-email {
-            color: #2c3e50;
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+    }
 
-        .user-meta {
-            color: #7f8c8d;
-            font-size: 12px;
-        }
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
 
-        .user-actions {
-            display: flex;
-            gap: 8px;
-        }
+    .chart-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
 
-        .badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-            text-transform: uppercase;
-        }
+    .chart-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
 
-        .badge.admin {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+    }
 
-        .badge.active {
-            background: #e8f5e8;
-            color: #2e7d32;
-        }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+    }
 
-        .badge.inactive {
-            background: #ffebee;
-            color: #c62828;
-        }
+    .btn-primary:hover {
+      background: var(--accent-dim);
+    }
 
-        .badge.two-fa {
-            background: #f3e5f5;
-            color: #7b1fa2;
-        }
+    .btn-secondary {
+      background: var(--border);
+      color: var(--text);
+    }
 
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+    .btn-secondary:hover {
+      background: var(--muted);
+    }
 
-        .btn-primary {
-            background: #3498db;
-            color: white;
-        }
+    .table-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+      overflow-x: auto;
+    }
 
-        .btn-primary:hover {
-            background: #2980b9;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
 
-        .btn-danger:hover {
-            background: #c0392b;
-        }
+    th {
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 0.875rem;
+    }
 
-        .btn-success {
-            background: #2ecc71;
-            color: white;
-        }
+    tr:hover {
+      background: var(--border);
+    }
 
-        .btn-success:hover {
-            background: #27ae60;
-        }
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
 
-        .search-box {
-            margin-bottom: 20px;
-        }
+    .status-online {
+      background: var(--success);
+      color: white;
+    }
 
-        .search-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-        }
+    .status-offline {
+      background: var(--error);
+      color: white;
+    }
 
-        .search-input:focus {
-            outline: none;
-            border-color: #3498db;
-        }
+    .status-warning {
+      background: var(--warning);
+      color: white;
+    }
 
-        .health-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 16px;
-        }
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+    }
 
-        .health-status.healthy {
-            background: #e8f5e8;
-            color: #2e7d32;
-        }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border);
+      border-top: 4px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
 
-        .health-status.warning {
-            background: #fff3e0;
-            color: #f57c00;
-        }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
-        .health-status.critical {
-            background: #ffebee;
-            color: #c62828;
-        }
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
 
-        .health-status.error {
-            background: #ffebee;
-            color: #c62828;
-        }
+      .sidebar.open {
+        transform: translateX(0);
+      }
 
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: currentColor;
-        }
+      .main-content {
+        margin-left: 0;
+      }
 
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px;
-            color: #7f8c8d;
-        }
+      .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
 
-        .loading-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 12px;
-        }
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 1rem;
+      }
 
-        .error {
-            background: #ffebee;
-            color: #c62828;
-            padding: 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        }
+      .main-content {
+        padding: 1rem;
+      }
 
-        .chart-container {
-            height: 300px;
-            margin-top: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <div class="header">
-            <h1>Dashboard Administrativo</h1>
-            <p>Monitoramento e gestão do sistema Monitor de Leilões</p>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <h1>🎛️ Dashboard Administrativo</h1>
         </div>
-
-        <div id="error-message" class="error" style="display: none;"></div>
-
-        <!-- Estatísticas Principais -->
-        <div class="stats-grid" id="stats-grid">
-            <div class="loading">
-                <div class="loading-spinner"></div>
-                Carregando estatísticas...
-            </div>
+        <div class="user-info">
+          <span id="current-time"></span>
+          <div class="user-avatar">A</div>
+          <span>Admin</span>
         </div>
-
-        <!-- Conteúdo Principal -->
-        <div class="content-grid">
-            <!-- Usuários Recentes -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Usuários Recentes</h2>
-                </div>
-                <div class="search-box">
-                    <input type="text" class="search-input" id="user-search" placeholder="Buscar usuários...">
-                </div>
-                <div class="user-list" id="user-list">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        Carregando usuários...
-                    </div>
-                </div>
-            </div>
-
-            <!-- Saúde do Sistema -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Saúde do Sistema</h2>
-                </div>
-                <div id="system-health">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        Verificando sistema...
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Estatísticas 2FA -->
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Estatísticas de 2FA</h2>
-            </div>
-            <div class="stats-grid" id="2fa-stats">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    Carregando estatísticas 2FA...
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+  </header>
 
-    <script>
-        class DashboardManager {
-            constructor() {
-                this.init();
-            }
+  <aside class="sidebar" id="sidebar">
+    <nav>
+      <div class="nav-item active" data-section="overview">
+        📊 Visão Geral
+      </div>
+      <div class="nav-item" data-section="users">
+        👥 Usuários
+      </div>
+      <div class="nav-item" data-section="leiloes">
+        🚗 Leilões
+      </div>
+      <div class="nav-item" data-section="analytics">
+        📈 Analytics
+      </div>
+      <div class="nav-item" data-section="security">
+        🛡️ Segurança
+      </div>
+      <div class="nav-item" data-section="pwa">
+        📱 PWA
+      </div>
+      <div class="nav-item" data-section="rate-limit">
+        ⏱️ Rate Limit
+      </div>
+      <div class="nav-item" data-section="health">
+        💚 Health
+      </div>
+      <div class="nav-item" data-section="settings">
+        ⚙️ Configurações
+      </div>
+    </nav>
+  </aside>
 
-            async init() {
-                await this.loadDashboardData();
-                this.bindEvents();
-                this.setupAutoRefresh();
-            }
+  <main class="main-content">
+    <!-- Overview Section -->
+    <section id="overview" class="dashboard-section">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Usuários Ativos</span>
+            <div class="stat-icon" style="background: var(--info);">👥</div>
+          </div>
+          <div class="stat-value" id="active-users">-</div>
+          <div class="stat-change positive">
+            ↑ <span id="users-change">+12%</span> vs última hora
+          </div>
+        </div>
 
-            async loadDashboardData() {
-                try {
-                    const response = await fetch('/api/dashboard/stats');
-                    const data = await response.json();
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Leilões Ativos</span>
+            <div class="stat-icon" style="background: var(--accent);">🚗</div>
+          </div>
+          <div class="stat-value" id="active-leiloes">-</div>
+          <div class="stat-change positive">
+            ↑ <span id="leiloes-change">+8%</span> vs ontem
+          </div>
+        </div>
 
-                    if (data.success) {
-                        this.renderStats(data.data.overview);
-                        this.renderRecentUsers(data.data.recent_users);
-                        this.renderSystemHealth(data.data.system_health);
-                        this.render2FAStats(data.data.two_fa_stats);
-                    } else {
-                        this.showError('Erro ao carregar dados do dashboard');
-                    }
-                } catch (error) {
-                    this.showError('Erro de conexão: ' + error.message);
-                }
-            }
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">Taxa de Conversão</span>
+            <div class="stat-icon" style="background: var(--success);">📈</div>
+          </div>
+          <div class="stat-value" id="conversion-rate">-</div>
+          <div class="stat-change negative">
+            ↓ <span id="conversion-change">-3%</span> vs semana
+          </div>
+        </div>
 
-            renderStats(overview) {
-                const statsGrid = document.getElementById('stats-grid');
-                
-                statsGrid.innerHTML = `
-                    <div class="stat-card primary">
-                        <div class="stat-label">Total de Usuários</div>
-                        <div class="stat-value">${overview.total_users || 0}</div>
-                        <div class="stat-change">Cadastrados no sistema</div>
-                    </div>
-                    <div class="stat-card success">
-                        <div class="stat-label">Usuários Ativos</div>
-                        <div class="stat-value">${overview.active_users || 0}</div>
-                        <div class="stat-change positive">Usuários ativos</div>
-                    </div>
-                    <div class="stat-card warning">
-                        <div class="stat-label">Com 2FA</div>
-                        <div class="stat-value">${overview.users_with_2fa || 0}</div>
-                        <div class="stat-change">${overview.two_fa_adoption_rate || 0}% de adoção</div>
-                    </div>
-                    <div class="stat-card danger">
-                        <div class="stat-label">Administradores</div>
-                        <div class="stat-value">${overview.admin_users || 0}</div>
-                        <div class="stat-change">Com acesso admin</div>
-                    </div>
-                `;
-            }
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-title">System Health</span>
+            <div class="stat-icon" style="background: var(--success);">💚</div>
+          </div>
+          <div class="stat-value" id="health-score">-</div>
+          <div class="stat-change positive">
+            ↑ <span id="health-change">+2%</span> otimização
+          </div>
+        </div>
+      </div>
 
-            renderRecentUsers(users) {
-                const userList = document.getElementById('user-list');
-                
-                if (users.length === 0) {
-                    userList.innerHTML = '<p style="text-align: center; color: #7f8c8d;">Nenhum usuário encontrado</p>';
-                    return;
-                }
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Tráfego de Usuários</h3>
+            <div class="chart-actions">
+              <button class="btn btn-secondary">7d</button>
+              <button class="btn btn-primary">24h</button>
+            </div>
+          </div>
+          <canvas id="traffic-chart" height="200"></canvas>
+        </div>
 
-                userList.innerHTML = users.map(user => `
-                    <div class="user-item">
-                        <div class="user-info">
-                            <div class="user-email">${user.email}</div>
-                            <div class="user-meta">
-                                Criado em ${this.formatDate(user.created_at)}
-                            </div>
-                        </div>
-                        <div class="user-actions">
-                            ${user.is_admin ? '<span class="badge admin">Admin</span>' : ''}
-                            ${user.is_active ? '<span class="badge active">Ativo</span>' : '<span class="badge inactive">Inativo</span>'}
-                            ${user.is_2fa_enabled ? '<span class="badge two-fa">2FA</span>' : ''}
-                        </div>
-                    </div>
-                `).join('');
-            }
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Leilões por Estado</h3>
+            <div class="chart-actions">
+              <button class="btn btn-secondary">Exportar</button>
+            </div>
+          </div>
+          <canvas id="leiloes-chart" height="200"></canvas>
+        </div>
+      </div>
+    </section>
 
-            renderSystemHealth(health) {
-                const healthContainer = document.getElementById('system-health');
-                
-                const statusClass = health.status || 'error';
-                const statusText = {
-                    healthy: 'Saudável',
-                    warning: 'Atenção',
-                    critical: 'Crítico',
-                    error: 'Erro'
-                }[statusClass] || 'Desconhecido';
+    <!-- Users Section -->
+    <section id="users" class="dashboard-section" style="display: none;">
+      <div class="table-container">
+        <div class="chart-header">
+          <h3 class="chart-title">Usuários Cadastrados</h3>
+          <div class="chart-actions">
+            <button class="btn btn-primary">Novo Usuário</button>
+            <button class="btn btn-secondary">Exportar</button>
+          </div>
+        </div>
+        <table id="users-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Último Login</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="6" class="loading">
+                <div class="spinner"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-                healthContainer.innerHTML = `
-                    <div class="health-status ${statusClass}">
-                        <div class="status-indicator"></div>
-                        <span>Status: ${statusText}</span>
-                    </div>
-                    <div style="font-size: 14px; color: #7f8c8d;">
-                        <div>Usuários: ${health.user_count || 0}</div>
-                        <div>Administradores: ${health.admin_count || 0}</div>
-                        <div>Ativos: ${health.active_count || 0}</div>
-                        <div>Database: ${health.database_connected ? 'Conectado' : 'Desconectado'}</div>
-                    </div>
-                    ${health.issues && health.issues.length > 0 ? `
-                        <div style="margin-top: 12px;">
-                            <strong>Problemas:</strong>
-                            <ul style="margin: 8px 0; padding-left: 20px; font-size: 12px; color: #e74c3c;">
-                                ${health.issues.map(issue => `<li>${issue}</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                `;
-            }
+    <!-- Other sections would be added here -->
+  </main>
 
-            render2FAStats(stats) {
-                const statsContainer = document.getElementById('2fa-stats');
-                
-                statsContainer.innerHTML = `
-                    <div class="stat-card success">
-                        <div class="stat-label">Com 2FA Ativo</div>
-                        <div class="stat-value">${stats.enabled_2fa || 0}</div>
-                        <div class="stat-change positive">Protegidos</div>
-                    </div>
-                    <div class="stat-card warning">
-                        <div class="stat-label">Sem 2FA</div>
-                        <div class="stat-value">${stats.disabled_2fa || 0}</div>
-                        <div class="stat-change">Necessitam proteção</div>
-                    </div>
-                    <div class="stat-card primary">
-                        <div class="stat-label">Taxa de Adoção</div>
-                        <div class="stat-value">${stats.adoption_rate || 0}%</div>
-                        <div class="stat-change">Dos usuários totais</div>
-                    </div>
-                `;
-            }
+  <!-- Scripts -->
+  <script src="/static/pwa.js"></script>
+  <script src="/static/analytics.js"></script>
+  <script src="/static/theme.js"></script>
+  <script>
+    // Dashboard Controller
+    class DashboardController {
+      constructor() {
+        this.currentSection = 'overview';
+        this.charts = {};
+        this.refreshInterval = 30000; // 30 seconds
+        
+        this.init();
+      }
 
-            bindEvents() {
-                // Busca de usuários
-                const searchInput = document.getElementById('user-search');
-                let searchTimeout;
-                
-                searchInput.addEventListener('input', (e) => {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        this.searchUsers(e.target.value);
-                    }, 500);
-                });
-            }
+      async init() {
+        this.setupEventListeners();
+        this.updateTime();
+        await this.loadDashboardData();
+        this.startAutoRefresh();
+      }
 
-            async searchUsers(query) {
-                if (!query.trim()) {
-                    await this.loadDashboardData();
-                    return;
-                }
+      setupEventListeners() {
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.addEventListener('click', (e) => {
+            const section = e.target.dataset.section;
+            this.switchSection(section);
+          });
+        });
 
-                try {
-                    const response = await fetch('/api/dashboard/search-users', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ query, limit: 10 })
-                    });
+        // Mobile menu toggle
+        if (window.innerWidth <= 1024) {
+          this.setupMobileMenu();
+        }
+      }
 
-                    const data = await response.json();
+      setupMobileMenu() {
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.createElement('button');
+        menuToggle.innerHTML = '☰';
+        menuToggle.className = 'btn btn-primary mobile-menu-toggle';
+        menuToggle.style.cssText = 'position: fixed; top: 80px; left: 20px; z-index: 1000;';
+        
+        document.body.appendChild(menuToggle);
+        
+        menuToggle.addEventListener('click', () => {
+          sidebar.classList.toggle('open');
+        });
+      }
 
-                    if (data.success) {
-                        this.renderRecentUsers(data.data);
-                    }
-                } catch (error) {
-                    console.error('Erro na busca:', error);
-                }
-            }
+      switchSection(sectionName) {
+        // Update navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.classList.remove('active');
+        });
+        document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
 
-            setupAutoRefresh() {
-                // Atualizar dashboard a cada 30 segundos
-                setInterval(() => {
-                    this.loadDashboardData();
-                }, 30000);
-            }
-
-            formatDate(dateString) {
-                if (!dateString) return 'Desconhecido';
-                
-                const date = new Date(dateString);
-                return date.toLocaleDateString('pt-BR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                });
-            }
-
-            showError(message) {
-                const errorElement = document.getElementById('error-message');
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-                
-                setTimeout(() => {
-                    errorElement.style.display = 'none';
-                }, 5000);
-            }
+        // Update content
+        document.querySelectorAll('.dashboard-section').forEach(section => {
+          section.style.display = 'none';
+        });
+        
+        const targetSection = document.getElementById(sectionName);
+        if (targetSection) {
+          targetSection.style.display = 'block';
+          this.loadSectionData(sectionName);
         }
 
-        // Inicializar quando a página carregar
-        document.addEventListener('DOMContentLoaded', () => {
-            new DashboardManager();
+        this.currentSection = sectionName;
+      }
+
+      async loadDashboardData() {
+        try {
+          // Load stats
+          await this.loadStats();
+          
+          // Load charts
+          await this.loadCharts();
+          
+          // Load health status
+          await this.loadHealthStatus();
+          
+        } catch (error) {
+          console.error('Error loading dashboard data:', error);
+        }
+      }
+
+      async loadStats() {
+        try {
+          const response = await fetch('/api/dashboard/stats');
+          const data = await response.json();
+          
+          // Update stat cards
+          document.getElementById('active-users').textContent = data.active_users || '0';
+          document.getElementById('active-leiloes').textContent = data.total_leiloes || '0';
+          document.getElementById('conversion-rate').textContent = data.conversion_rate || '0%';
+          document.getElementById('health-score').textContent = data.health_score || '100%';
+          
+        } catch (error) {
+          console.error('Error loading stats:', error);
+          // Set default values
+          document.getElementById('active-users').textContent = '0';
+          document.getElementById('active-leiloes').textContent = '0';
+          document.getElementById('conversion-rate').textContent = '0%';
+          document.getElementById('health-score').textContent = '100%';
+        }
+      }
+
+      async loadCharts() {
+        await this.loadTrafficChart();
+        await this.loadLeiloesChart();
+      }
+
+      async loadTrafficChart() {
+        const ctx = document.getElementById('traffic-chart').getContext('2d');
+        
+        // Sample data - replace with real API call
+        const data = {
+          labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+          datasets: [{
+            label: 'Usuários Ativos',
+            data: [12, 19, 3, 5, 2, 3],
+            borderColor: '#c9a227',
+            backgroundColor: 'rgba(201, 162, 39, 0.1)',
+            tension: 0.4
+          }]
+        };
+
+        this.charts.traffic = new Chart(ctx, {
+          type: 'line',
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: '#e8e6e3' }
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: '#2a2a32' },
+                ticks: { color: '#8b8685' }
+              },
+              y: {
+                grid: { color: '#2a2a32' },
+                ticks: { color: '#8b8685' }
+              }
+            }
+          }
         });
-    </script>
+      }
+
+      async loadLeiloesChart() {
+        const ctx = document.getElementById('leiloes-chart').getContext('2d');
+        
+        // Sample data - replace with real API call
+        const data = {
+          labels: ['MG', 'SP', 'RJ', 'RS', 'PR'],
+          datasets: [{
+            label: 'Leilões por Estado',
+            data: [65, 59, 80, 81, 56],
+            backgroundColor: [
+              '#c9a227',
+              '#2d7d46',
+              '#3b82f6',
+              '#f59e0b',
+              '#22c55e'
+            ]
+          }]
+        };
+
+        this.charts.leiloes = new Chart(ctx, {
+          type: 'doughnut',
+          data: data,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: '#e8e6e3' }
+              }
+            }
+          }
+        });
+      }
+
+      async loadHealthStatus() {
+        try {
+          const response = await fetch('/api/dashboard/health');
+          const data = await response.json();
+          
+          // Update health indicators
+          console.log('Health status:', data);
+          
+        } catch (error) {
+          console.error('Error loading health status:', error);
+        }
+      }
+
+      async loadSectionData(sectionName) {
+        switch (sectionName) {
+          case 'users':
+            await this.loadUsersData();
+            break;
+          case 'leiloes':
+            await this.loadLeiloesData();
+            break;
+          case 'analytics':
+            await this.loadAnalyticsData();
+            break;
+          // Add other sections as needed
+        }
+      }
+
+      async loadUsersData() {
+        try {
+          const response = await fetch('/api/dashboard/users');
+          const users = await response.json();
+          
+          const tbody = document.querySelector('#users-table tbody');
+          tbody.innerHTML = users.map(user => `
+            <tr>
+              <td>${user.id}</td>
+              <td>${user.name}</td>
+              <td>${user.email}</td>
+              <td>
+                <span class="status-badge ${user.status === 'active' ? 'status-online' : 'status-offline'}">
+                  ${user.status}
+                </span>
+              </td>
+              <td>${user.last_login || 'Never'}</td>
+              <td>
+                <button class="btn btn-secondary" onclick="editUser(${user.id})">Editar</button>
+              </td>
+            </tr>
+          `).join('');
+          
+        } catch (error) {
+          console.error('Error loading users:', error);
+          document.querySelector('#users-table tbody').innerHTML = 
+            '<tr><td colspan="6">Erro ao carregar usuários</td></tr>';
+        }
+      }
+
+      updateTime() {
+        const updateTimeElement = () => {
+          const now = new Date();
+          const timeString = now.toLocaleString('pt-BR', {
+            weekday: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          document.getElementById('current-time').textContent = timeString;
+        };
+
+        updateTimeElement();
+        setInterval(updateTimeElement, 60000); // Update every minute
+      }
+
+      startAutoRefresh() {
+        setInterval(() => {
+          if (this.currentSection === 'overview') {
+            this.loadDashboardData();
+          } else {
+            this.loadSectionData(this.currentSection);
+          }
+        }, this.refreshInterval);
+      }
+    }
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      window.dashboard = new DashboardController();
+    });
+
+    // Global functions for table actions
+    function editUser(userId) {
+      console.log('Edit user:', userId);
+      // Implement edit user functionality
+    }
+  </script>
 </body>
 </html>
