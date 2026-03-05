@@ -62,7 +62,17 @@ async def login(
                 detail="Email ou senha incorretos"
             )
         
-        # Criar tokens
+        # Verificar se 2FA está ativo
+        if user.is_2fa_enabled:
+            # Retornar resposta indicando que 2FA é necessário
+            return {
+                "requires_2fa": True,
+                "message": "Autenticação de dois fatores necessária",
+                "user_id": user.id,
+                "temp_token": jwt_service.create_temp_token(user.id)  # Token temporário para 2FA
+            }
+        
+        # Criar tokens (sem 2FA)
         tokens = jwt_service.create_tokens_for_user(
             user_id=user.id,
             email=user.email,
@@ -86,6 +96,74 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Erro interno do servidor"
+        )
+
+
+@router.post("/login-2fa")
+async def login_with_2fa(
+    login_data: LoginRequest,
+    two_fa_code: str,
+    temp_token: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Endpoint de login com verificação 2FA
+    """
+    try:
+        # Verificar token temporário
+        temp_payload = jwt_service.verify_temp_token(temp_token)
+        if not temp_payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token temporário inválido ou expirado"
+            )
+        
+        user_id = int(temp_payload.get("sub"))
+        
+        # Obter usuário
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Usuário não encontrado"
+            )
+        
+        # Verificar se 2FA está ativo
+        if not user.is_2fa_enabled:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="2FA não está ativo para este usuário"
+            )
+        
+        # Verificar token 2FA
+        from app.services.two_factor import two_factor_service
+        if not two_factor_service.verify_token(user.totp_secret, two_fa_code):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Código 2FA inválido"
+            )
+        
+        # Criar tokens definitivos
+        tokens = jwt_service.create_tokens_for_user(
+            user_id=user.id,
+            email=user.email,
+            is_admin=user.is_admin
+        )
+        
+        return LoginResponse(
+            access_token=tokens["access_token"],
+            refresh_token=tokens["refresh_token"],
+            token_type=tokens["token_type"],
+            expires_in=tokens["expires_in"],
+            user=user.to_dict()
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro no login 2FA: {str(e)}"
         )
 
 

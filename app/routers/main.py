@@ -29,6 +29,19 @@ async def pagina_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
+@router.get("/setup-2fa", response_class=HTMLResponse)
+async def pagina_setup_2fa(request: Request):
+    """Página de configuração de 2FA."""
+    # Verificar se está logado
+    user = get_current_user_optional(request)
+    if not user:
+        # Não está logado, redirecionar para login
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login", status_code=302)
+    
+    return templates.TemplateResponse("setup_2fa.html", {"request": request})
+
+
 @router.get("/", response_class=HTMLResponse)
 async def pagina_inicial(request: Request):
     """Página principal com listagem de leilões (editais)."""

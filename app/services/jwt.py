@@ -98,6 +98,36 @@ class JWTService:
         
         return self.create_access_token(new_token_data)
     
+    def create_temp_token(self, user_id: int) -> str:
+        """Cria um token temporário para verificação 2FA (5 minutos)."""
+        expires_delta = timedelta(minutes=5)
+        expire = datetime.utcnow() + expires_delta
+        
+        payload = {
+            "sub": str(user_id),
+            "type": "2fa_temp",
+            "exp": expire,
+            "iat": datetime.utcnow()
+        }
+        
+        return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
+    
+    def verify_temp_token(self, token: str) -> Optional[dict]:
+        """Verifica um token temporário 2FA."""
+        try:
+            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            
+            # Verificar se é um token temporário 2FA
+            if payload.get("type") != "2fa_temp":
+                return None
+            
+            return payload
+            
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.JWTError:
+            return None
+    
     def create_tokens_for_user(self, user_id: int, email: str, is_admin: bool = False) -> Dict[str, str]:
         """Criar par de tokens (access + refresh) para usuário"""
         token_data = {
