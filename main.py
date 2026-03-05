@@ -16,6 +16,7 @@ from app.security import (
 )
 from app.middleware.auth import AuthMiddleware
 from app.middleware.bot_protection import BotProtectionMiddleware
+from app.middleware.advanced_rate_limit import AdvancedRateLimitMiddleware
 from app.services.recaptcha import recaptcha_config
 
 
@@ -88,6 +89,15 @@ if recaptcha_config.is_configured():
 else:
     print("Proteção contra bots desativada (reCAPTCHA não configurado)")
 
+# Adicionar middleware de rate limiting avançado
+from app.middleware.advanced_rate_limit import RateLimitConfig
+rate_limit_config = RateLimitConfig()
+if rate_limit_config.enabled:
+    app.add_middleware(AdvancedRateLimitMiddleware, config=rate_limit_config)
+    print("Rate limiting avançado ativado")
+else:
+    print("Rate limiting avançado desativado")
+
 # Adicionar middleware de autenticação
 app.add_middleware(AuthMiddleware)
 
@@ -102,6 +112,8 @@ from app.routers.recaptcha import router as recaptcha_router
 app.include_router(recaptcha_router, prefix="/api", tags=["recaptcha"])
 from app.routers.pwa import router as pwa_router
 app.include_router(pwa_router, prefix="/api/pwa", tags=["pwa"])
+from app.routers.rate_limit import router as rate_limit_router
+app.include_router(rate_limit_router, prefix="/api/rate-limit", tags=["rate-limit"])
 
 # Serve arquivos estáticos (se necessário)
 app.mount("/static", StaticFiles(directory="static"), name="static")
