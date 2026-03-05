@@ -8,6 +8,11 @@ Aplicação web em **FastAPI** para monitorar leilões de veículos com foco em 
 - Filtros por estado (MG/SP), fonte e cidade
 - Atualização manual da lista (busca nas fontes)
 - API REST para integração
+- **Carrossel de imagens** com navegação suave
+- **Pop-up modal** para visualização em alta resolução
+- **Interface profissional** e moderna
+- **Busca otimizada** de veículos
+- **Monitoramento em tempo real** do Detran MG
 
 ## Como rodar
 
