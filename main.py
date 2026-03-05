@@ -116,6 +116,8 @@ from app.routers.rate_limit import router as rate_limit_router
 app.include_router(rate_limit_router, prefix="/api/rate-limit", tags=["rate-limit"])
 from app.routers.analytics import router as analytics_router
 app.include_router(analytics_router, prefix="/api/analytics", tags=["analytics"])
+from app.routers.theme import router as theme_router
+app.include_router(theme_router, prefix="/api/theme", tags=["theme"])
 
 # Serve arquivos estáticos (se necessário)
 app.mount("/static", StaticFiles(directory="static"), name="static")
