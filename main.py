@@ -114,6 +114,8 @@ from app.routers.pwa import router as pwa_router
 app.include_router(pwa_router, prefix="/api/pwa", tags=["pwa"])
 from app.routers.rate_limit import router as rate_limit_router
 app.include_router(rate_limit_router, prefix="/api/rate-limit", tags=["rate-limit"])
+from app.routers.analytics import router as analytics_router
+app.include_router(analytics_router, prefix="/api/analytics", tags=["analytics"])
 
 # Serve arquivos estáticos (se necessário)
 app.mount("/static", StaticFiles(directory="static"), name="static")
