@@ -32,19 +32,19 @@ class RateLimitConfig:
         
         # Configurações por endpoint
         self.default_limits = {
-            "requests_per_minute": 100,
-            "requests_per_hour": 1000,
-            "requests_per_day": 10000
+            "requests_per_minute": 30,  # Aumentado de 100 para 30 (mais realista)
+            "requests_per_hour": 500,   # Reduzido de 1000 para 500
+            "requests_per_day": 5000    # Reduzido de 10000 para 5000
         }
         
         # Limits específicos por endpoint
         self.endpoint_limits = {
-            "/api/auth/login": {"requests_per_minute": 5, "requests_per_hour": 20},
-            "/api/auth/login-2fa": {"requests_per_minute": 10, "requests_per_hour": 50},
-            "/api/2fa/setup": {"requests_per_minute": 3, "requests_per_hour": 10},
-            "/api/2fa/enable": {"requests_per_minute": 3, "requests_per_hour": 10},
-            "/api/leiloes/atualizar": {"requests_per_minute": 2, "requests_per_hour": 10},
-            "/api/pwa/send-notification": {"requests_per_minute": 1, "requests_per_hour": 5},
+            "/api/auth/login": {"requests_per_minute": 10, "requests_per_hour": 50},  # Aumentado
+            "/api/auth/login-2fa": {"requests_per_minute": 15, "requests_per_hour": 75},  # Aumentado
+            "/api/2fa/setup": {"requests_per_minute": 5, "requests_per_hour": 20},  # Aumentado
+            "/api/2fa/enable": {"requests_per_minute": 5, "requests_per_hour": 20},  # Aumentado
+            "/api/leiloes/atualizar": {"requests_per_minute": 10, "requests_per_hour": 50},  # Aumentado drasticamente
+            "/api/pwa/send-notification": {"requests_per_minute": 5, "requests_per_hour": 25},  # Aumentado
         }
         
         # Configurações Redis (se disponível)
