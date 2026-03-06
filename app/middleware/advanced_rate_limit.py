@@ -4,10 +4,17 @@ Advanced Rate Limiting Middleware
 import time
 import json
 import asyncio
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, Union
 from collections import defaultdict, deque
 from fastapi import Request, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
+
+# Mapeamento de window names para segundos
+WINDOW_SECONDS = {
+    "requests_per_minute": 60,
+    "requests_per_hour": 3600,
+    "requests_per_day": 86400
+}
 from starlette.responses import Response
 import logging
 import hashlib
@@ -82,13 +89,20 @@ class MemoryRateLimitStorage:
         for key in expired_keys:
             del self.blocks[key]
     
-    def add_request(self, key: str, window: int):
+    def add_request(self, key: str, window: Union[int, str]):
         """Adiciona request à janela"""
         current_time = time.time()
-        request_queue = self.requests[key][window]
+        
+        # Converter window para segundos se for string
+        if isinstance(window, str):
+            window_seconds = WINDOW_SECONDS.get(window, 60)
+        else:
+            window_seconds = window
+            
+        request_queue = self.requests[key][window_seconds]
         
         # Remove requests antigos da janela
-        while request_queue and request_queue[0] <= current_time - window:
+        while request_queue and request_queue[0] <= current_time - window_seconds:
             request_queue.popleft()
         
         # Adiciona request atual
@@ -96,13 +110,20 @@ class MemoryRateLimitStorage:
         
         return len(request_queue)
     
-    def get_count(self, key: str, window: int) -> int:
+    def get_count(self, key: str, window: Union[int, str]) -> int:
         """Obtém count na janela"""
         current_time = time.time()
-        request_queue = self.requests[key][window]
+        
+        # Converter window para segundos se for string
+        if isinstance(window, str):
+            window_seconds = WINDOW_SECONDS.get(window, 60)
+        else:
+            window_seconds = window
+            
+        request_queue = self.requests[key][window_seconds]
         
         # Remove requests antigos
-        while request_queue and request_queue[0] <= current_time - window:
+        while request_queue and request_queue[0] <= current_time - window_seconds:
             request_queue.popleft()
         
         return len(request_queue)
@@ -250,7 +271,7 @@ class AdvancedRateLimitMiddleware(BaseHTTPMiddleware):
             ip_count = self.storage.get_count(ip_key, window_name)
             headers[f"X-RateLimit-Limit-{window_name}"] = str(limit)
             headers[f"X-RateLimit-Remaining-{window_name}"] = str(max(0, limit - ip_count))
-            headers[f"X-RateLimit-Reset-{window_name}"] = str(int(time.time()) + window_name)
+            headers[f"X-RateLimit-Reset-{window_name}"] = str(int(time.time()) + WINDOW_SECONDS.get(window_name, 60))
             
             # Count por usuário (se autenticado)
             if user_key:
