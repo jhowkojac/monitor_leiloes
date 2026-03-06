@@ -23,6 +23,7 @@ def test_imports():
         from app.routers.main import router
         from app.routers.dashboard import router as dashboard_router
         from app.routers.auth import router as auth_router
+        from app.routers.two_factor import router as two_factor_router
         print("OK Import routers")
     except Exception as e:
         print(f"ERRO import routers: {e}")
