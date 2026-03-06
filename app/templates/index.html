@@ -150,10 +150,16 @@
       display: block;
       height: 100%;
       width: 100%;
+      position: relative;
+      z-index: 1;
     }
     .card-link:hover .card {
       transform: translateY(-4px);
       border-color: var(--accent);
+    }
+    .card-link:hover {
+      text-decoration: none;
+      color: inherit;
     }
     .card {
       background: var(--surface);
@@ -555,6 +561,27 @@
       var lista = document.getElementById('lista');
       var cards = lista.querySelectorAll('.card');
 
+      // Garantir que todos os cards estejam visíveis inicialmente
+      function garantirVisibilidadeInicial() {
+        var cardLinks = document.querySelectorAll('.card-link');
+        cardLinks.forEach(function(cardLink) {
+          cardLink.style.display = 'block';
+        });
+        
+        var cards = document.querySelectorAll('.card');
+        cards.forEach(function(card) {
+          card.style.display = '';
+        });
+      }
+      
+      // Executar imediatamente
+      garantirVisibilidadeInicial();
+      
+      // Executar também quando o DOM estiver pronto
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', garantirVisibilidadeInicial);
+      }
+
       function aplicarFiltros() {
         var vEstado = (estado.value || '').toLowerCase();
         var vFonte = (fonte.value || '').toLowerCase();
@@ -564,7 +591,14 @@
             if (vEstado && card.dataset.estado !== vEstado) show = false;
             if (vFonte && card.dataset.fonte !== vFonte) show = false;
             if (vCidade && !(card.dataset.cidade || '').includes(vCidade)) show = false;
-            card.style.display = show ? '' : 'none';
+            
+            // Aplicar ao card-link (pai) em vez do card
+            var cardLink = card.closest('.card-link');
+            if (cardLink) {
+              cardLink.style.display = show ? 'block' : 'none';
+            } else {
+              card.style.display = show ? '' : 'none';
+            }
         });
       }
       filtrar.addEventListener('click', aplicarFiltros);
