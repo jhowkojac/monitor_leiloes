@@ -43,70 +43,78 @@ class FonteDetranMGOficial(FonteLeilaoBase):
             resp.raise_for_status()
             soup = BeautifulSoup(resp.text, "html.parser")
 
-            # Heurística: procurar todos os links "Detalhes" de editais
+            # Heurística: procurar todos os links de lotes (nova estrutura do site)
             count = 0
             for link in soup.find_all("a"):
-                texto = (link.get_text() or "").strip().lower()
-                if "detalhes" not in texto:
-                    continue
                 href = link.get("href")
                 if not href:
                     continue
-                edital_url = urljoin(BASE_URL, href)
-
-                # Tenta extrair informações do bloco que contém o link
-                bloco = link.find_parent(["div", "article", "tr", "li"]) or link
-                # **CORREÇÃO**: Subir mais um nível para encontrar o card completo
-                card = bloco.find_parent("div", class_="card")
-                if card:
-                    bloco_texto = card.get_text(" ", strip=True)
-                else:
-                    bloco_texto = bloco.get_text(" ", strip=True)
-
-                # Ex.: "Edital de Leilão 1445/2026 novo cruzeiro 1445 - GILMAR DE SOUZA SANTOS Publicado..."
-                codigo_match = re.search(r"(\d{3,5}/\d{4})", bloco_texto)
-                codigo = codigo_match.group(0) if codigo_match else f"Edital-{count+1}"
-
-                # Cidade: extrair do texto completo após o código
-                cidade = None
-                if codigo_match:
-                    after = bloco_texto[codigo_match.end() :].strip()
+                
+                # **NOVA ESTRUTURA**: Procura por links de lotes
+                if "/lotes/lista-lotes/" in href:
+                    edital_url = urljoin(BASE_URL, href)
                     
-                    # **ABORDAGEM SIMPLES**: Procurar por cidades conhecidas no texto
-                    cidades_conhecidas = {
-                        "novo cruzeiro": "Novo Cruzeiro",
-                        "tres pontas": "Três Pontas", 
-                        "divinopolis": "Divinópolis",
-                        "turmalina": "Turmalina",
-                        "juiz de fora": "Juiz de Fora",
-                        "belo horizonte": "Belo Horizonte",
-                        "uberaba": "Uberaba",
-                        "uberlândia": "Uberlândia",
-                        "montes claros": "Montes Claros",
-                        "contagem": "Contagem",
-                        "betim": "Betim"
-                    }
+                    # Extrai ID e ano da URL: /lotes/lista-lotes/3097/2026
+                    import re
+                    match = re.search(r'/lotes/lista-lotes/(\d+)/(\d+)', href)
+                    if match:
+                        lote_id = match.group(1)
+                        ano = match.group(2)
+                        codigo = f"{lote_id}/{ano}"
+                    else:
+                        codigo = f"Edital-{count+1}"
                     
-                    for chave, valor in cidades_conhecidas.items():
-                        if chave in after.lower():
-                            cidade = valor
-                            break
+                    # Tenta extrair informações do link
+                    texto_link = link.get_text(" ", strip=True)
                     
-                    # Se não encontrou cidade conhecida, extrai primeiras palavras
-                    if not cidade:
-                        partes = after.split()
-                        if partes:
-                            # Pega até 2 palavras, mas remove se tiver número
-                            cidade = " ".join(partes[:2]).strip()
-                            # Remove números e traços
-                            cidade = re.sub(r"\d+", "", cidade).strip()
-                            cidade = cidade.rstrip(" -")
-                            if len(cidade) < 3:  # Muito curto, ignora
+                    # Extrai informações do texto se disponível
+                    cidade = None
+                    veiculo_info = texto_link
+                    
+                    # Procura por padrões no texto
+                    if texto_link:
+                        # Padrão: "Edital de Leilão 3097/2026"
+                        edital_match = re.search(r'(\d{4,5}/\d{4})', texto_link)
+                        if edital_match:
+                            codigo = edital_match.group(1)
+                        
+                        # Tenta extrair cidade do texto ao redor
+                        parent = link.find_parent(["div", "article", "tr", "li", "td"])
+                        if parent:
+                            parent_text = parent.get_text(" ", strip=True)
+                            # Procura por cidades conhecidas
+                            cidades_conhecidas = {
+                                "novo cruzeiro": "Novo Cruzeiro",
+                                "tres pontas": "Três Pontas", 
+                                "divinopolis": "Divinópolis",
+                                "turmalina": "Turmalina",
+                                "juiz de fora": "Juiz de Fora",
+                                "belo horizonte": "Belo Horizonte",
+                                "uberaba": "Uberaba",
+                                "uberlândia": "Uberlândia",
+                                "montes claros": "Montes Claros",
+                                "contagem": "Contagem",
+                                "betim": "Betim"
+                            }
+                            
+                            for chave, valor in cidades_conhecidas.items():
+                                if chave in parent_text.lower():
+                                    cidade = valor
+                                    break
+                            if cidade is None:
                                 cidade = None
-                else:
-                    # Se não encontrou código, tenta extrair do texto
-                    if "novo cruzeiro" in bloco_texto.lower():
-                        cidade = "Novo Cruzeiro"
+                    else:
+                        # Se não encontrou código, tenta extrair do texto
+                        if "novo cruzeiro" in texto_link.lower():
+                            cidade = "Novo Cruzeiro"
+                        elif "tres pontas" in texto_link.lower():
+                            cidade = "Três Pontas"
+                        elif "divinopolis" in texto_link.lower():
+                            cidade = "Divinópolis"
+                        elif "turmalina" in texto_link.lower():
+                            cidade = "Turmalina"
+                        elif "bh" in texto_link.lower() or "belo horizonte" in texto_link.lower():
+                            cidade = "Belo Horizonte"
                     elif "tres pontas" in bloco_texto.lower():
                         cidade = "Três Pontas"
                     elif "divinopolis" in bloco_texto.lower():
@@ -156,6 +164,7 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                 if count >= MAX_EDITAIS:
                     break
 
+        print(f"Encontrados {len(veiculos)} leilões no Detran MG")
         return veiculos
 
     async def listar_veiculos_do_edital(self, edital_url: str) -> List[VeiculoLeilao]:
