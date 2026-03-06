@@ -100,6 +100,7 @@ else:
 app.add_middleware(AuthMiddleware)
 
 # Inclui rotas
+from app.routers.main import router
 app.include_router(router)
 app.include_router(auth_router)
 from app.routers.two_factor import router as two_factor_router
