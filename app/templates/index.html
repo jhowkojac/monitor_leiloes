@@ -391,7 +391,7 @@
           {% endif %}
           {% endif %}
           {% if leilao.data_leilao %}
-          <div class="footer-meta">Data do leilão: {{ leilao.data_leilao.strftime("%d/%m/%Y") }}</div>
+          <div class="footer-meta">📅 Data: {{ leilao.data_leilao.strftime("%d/%m/%Y") }}</div>
           {% endif %}
         </div>
         <div class="card-footer">
@@ -440,7 +440,7 @@
           .finally(function() { atualizar.disabled = false; atualizar.textContent = 'Atualizar lista'; });
       });
 
-      // Carrossel por card
+      // Carrossel por card - CORRIGIDO
       var carousels = document.querySelectorAll('.carousel');
       carousels.forEach(function(carousel) {
         var slides = carousel.querySelector('.carousel-slides');
@@ -460,17 +460,28 @@
         }
 
         var navBtns = carousel.querySelectorAll('.carousel-btn');
-        navBtns.forEach(function(btn) {
-          btn.addEventListener('click', function(ev) {
-            ev.stopPropagation();
-            var dir = btn.getAttribute('data-dir');
-            var current = parseInt(carousel.dataset.index || '0', 10) || 0;
-            setIndex(dir === 'next' ? current + 1 : current - 1);
+        if (navBtns.length > 0) {
+          navBtns.forEach(function(btn) {
+            btn.addEventListener('click', function(ev) {
+              ev.stopPropagation();
+              ev.preventDefault();
+              var dir = btn.getAttribute('data-dir');
+              var current = parseInt(carousel.dataset.index || '0', 10) || 0;
+              setIndex(dir === 'next' ? current + 1 : current - 1);
+            });
           });
-        });
+        }
 
         // Inicia na primeira imagem
         setIndex(0);
+        
+        // Auto-play opcional (5 segundos por slide)
+        if (total > 1) {
+          setInterval(function() {
+            var current = parseInt(carousel.dataset.index || '0', 10) || 0;
+            setIndex(current + 1);
+          }, 5000);
+        }
       });
     })();
   </script>

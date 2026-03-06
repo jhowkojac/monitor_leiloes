@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 from typing import List, Optional
 from urllib.parse import urljoin
+from datetime import datetime
 
 import httpx
 from bs4 import BeautifulSoup
@@ -94,7 +95,20 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                                 "uberlândia": "Uberlândia",
                                 "montes claros": "Montes Claros",
                                 "contagem": "Contagem",
-                                "betim": "Betim"
+                                "betim": "Betim",
+                                "itajuba": "Itajubá",
+                                "pouso alegre": "Pouso Alegre",
+                                "patos de minas": "Patos de Minas",
+                                "sao joao del rei": "São João del Rei",
+                                "ouro preto": "Ouro Preto",
+                                "mariana": "Mariana",
+                                "sabara": "Sabará",
+                                "itabira": "Itabira",
+                                "conselheiro lafaiete": "Conselheiro Lafaiete",
+                                "nova lima": "Nova Lima",
+                                "ribeirao das neves": "Ribeirão das Neves",
+                                "ibirité": "Ibirité",
+                                "vespasiano": "Vespasiano"
                             }
                             
                             for chave, valor in cidades_conhecidas.items():
@@ -102,25 +116,100 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                                     cidade = valor
                                     break
                         else:
-                            # Se não encontrou código, tenta extrair do texto
-                            if "novo cruzeiro" in texto_link.lower():
-                                cidade = "Novo Cruzeiro"
-                            elif "tres pontas" in texto_link.lower():
-                                cidade = "Três Pontas"
-                            elif "divinopolis" in texto_link.lower():
-                                cidade = "Divinópolis"
-                            elif "turmalina" in texto_link.lower():
-                                cidade = "Turmalina"
-                            elif "bh" in texto_link.lower() or "belo horizonte" in texto_link.lower():
-                                cidade = "Belo Horizonte"
+                            # Se não encontrou cidade no parent, tenta no texto do link
+                            if not cidade:
+                                for chave, valor in cidades_conhecidas.items():
+                                    if chave in texto_link.lower():
+                                        cidade = valor
+                                        break
+                    else:
+                        # Se não encontrou código, tenta extrair do texto
+                        if "novo cruzeiro" in texto_link.lower():
+                            cidade = "Novo Cruzeiro"
+                        elif "tres pontas" in texto_link.lower():
+                            cidade = "Três Pontas"
+                        elif "divinopolis" in texto_link.lower():
+                            cidade = "Divinópolis"
+                        elif "turmalina" in texto_link.lower():
+                            cidade = "Turmalina"
+                        elif "bh" in texto_link.lower() or "belo horizonte" in texto_link.lower():
+                            cidade = "Belo Horizonte"
 
                     # Garante que código sempre tenha valor
                     if not codigo:
                         codigo = f"Edital-{count+1}"
 
+                    # Extrair data do edital se disponível
+                    data_leilao = None
+                    try:
+                        # Tenta buscar data da página do edital
+                        async with httpx.AsyncClient(timeout=10.0) as client:
+                            resp = await client.get(edital_url)
+                            resp.raise_for_status()
+                            soup_edital = BeautifulSoup(resp.text, "html.parser")
+                            
+                            # Procura por informações de data
+                            data_text = None
+                            
+                            # Padrões comuns de data
+                            for pattern in ["Data do leilão", "Data:", "Data do Leilão:", "Leilão:", "DATA"]:
+                                elements = soup_edital.find_all(string=lambda text: text and pattern in text)
+                                if elements:
+                                    data_text = elements[0]
+                                    break
+                            
+                            # Se não encontrou nos textos, procura em elementos
+                            if not data_text:
+                                date_elements = soup_edital.find_all(["span", "div", "p", "strong"], 
+                                                                    string=lambda text: text and any(word in text.lower() for word in ["data", "leilão", "realização"]))
+                                for elem in date_elements:
+                                    parent = elem.parent
+                                    if parent:
+                                        parent_text = parent.get_text(" ", strip=True)
+                                        if any(char.isdigit() for char in parent_text):
+                                            data_text = parent_text
+                                            break
+                            
+                            # Extrai data do texto encontrado
+                            if data_text:
+                                import re
+                                # Padrões de data: DD/MM/YYYY, DD/MM/YY, etc.
+                                date_patterns = [
+                                    r'(\d{2}/\d{2}/\d{4})',
+                                    r'(\d{2}/\d{2}/\d{2})',
+                                    r'(\d{1,2}/\d{1,2}/\d{4})',
+                                    r'(\d{1,2}\sde\s\w+\sde\s\d{4})'
+                                ]
+                                
+                                for pattern in date_patterns:
+                                    match = re.search(pattern, data_text)
+                                    if match:
+                                        date_str = match.group(1)
+                                        try:
+                                            # Tenta converter para datetime
+                                            if len(date_str) == 10 and date_str[2] == '/' and date_str[5] == '/':
+                                                # Formato DD/MM/YYYY
+                                                data_leilao = datetime.strptime(date_str, "%d/%m/%Y")
+                                            elif len(date_str) == 8 and date_str[2] == '/':
+                                                # Formato DD/MM/YY - assume 2000s
+                                                date_str = date_str[:6] + "20" + date_str[6:]
+                                                data_leilao = datetime.strptime(date_str, "%d/%m/%Y")
+                                            break
+                                        except ValueError:
+                                            # Se não conseguir converter, mantém como string
+                                            data_leilao = date_str
+                                            break
+                    except Exception as e:
+                        print(f"Erro ao extrair data para {codigo}: {e}")
+
                     titulo = f"Edital {codigo}"
                     if cidade:
                         titulo = f"{titulo} - {cidade.title()}"
+                    if data_leilao:
+                        if isinstance(data_leilao, str):
+                            titulo = f"{titulo} ({data_leilao})"
+                        else:
+                            titulo = f"{titulo} ({data_leilao.strftime('%d/%m/%Y')})"
                     descricao = texto_link
 
                     # **NOVA FEATURE**: Buscar o veículo mais valioso para usar como capa
@@ -152,6 +241,7 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                                 imagem_destaque,
                                 "https://via.placeholder.com/400x250?text=Edital+Detran+MG+2",
                             ],
+                            data_leilao=data_leilao if isinstance(data_leilao, datetime) else None,
                         )
                     )
                     count += 1
