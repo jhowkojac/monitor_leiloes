@@ -113,6 +113,8 @@
       gap: 1rem;
       justify-items: stretch;
       align-items: start;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
     
     /* Media queries para melhor layout do grid */
@@ -147,11 +149,14 @@
     .card-link {
       text-decoration: none;
       color: inherit;
-      display: block;
+      display: block !important;
       height: 100%;
       width: 100%;
       position: relative;
       z-index: 1;
+      visibility: visible !important;
+      opacity: 1 !important;
+      overflow: visible !important;
     }
     .card-link:hover .card {
       transform: translateY(-4px);
@@ -173,6 +178,9 @@
       justify-content: flex-start;
       min-height: 450px;
       width: 100%;
+      visibility: visible !important;
+      opacity: 1 !important;
+      position: relative !important;
     }
     .card:hover { border-color: var(--accent-dim); }
     .card-content {
@@ -563,15 +571,32 @@
 
       // Garantir que todos os cards estejam visíveis inicialmente
       function garantirVisibilidadeInicial() {
+        console.log('🔍 Garantindo visibilidade inicial...');
+        
         var cardLinks = document.querySelectorAll('.card-link');
-        cardLinks.forEach(function(cardLink) {
-          cardLink.style.display = 'block';
+        console.log('📊 Card links encontrados:', cardLinks.length);
+        
+        cardLinks.forEach(function(cardLink, index) {
+          cardLink.style.display = 'block !important';
+          cardLink.style.visibility = 'visible !important';
+          cardLink.style.opacity = '1 !important';
+          cardLink.style.position = 'relative !important';
+          console.log('✅ Card link', index, 'visível:', cardLink.style.display);
         });
         
         var cards = document.querySelectorAll('.card');
-        cards.forEach(function(card) {
+        console.log('📊 Cards encontrados:', cards.length);
+        
+        cards.forEach(function(card, index) {
           card.style.display = '';
+          card.style.visibility = 'visible !important';
+          card.style.opacity = '1 !important';
+          console.log('✅ Card', index, 'visível:', card.style.display);
         });
+        
+        // Forçar reflow
+        document.body.offsetHeight;
+        console.log('🔄 Reforçado reflow do documento');
       }
       
       // Executar imediatamente
