@@ -213,87 +213,211 @@
       padding: 3rem;
       color: var(--muted);
     }
+    /* CARROSSEL MODERNO E RESPONSIVO */
     .carousel {
       position: relative;
-      margin-bottom: 0.75rem;
-      border-radius: 8px;
+      margin-bottom: 1rem;
+      border-radius: 12px;
       overflow: hidden;
-      border: 1px solid #22222a;
-      background: #101015;
-      height: 200px;
-      width: 100%;
+      background: #0a0a0b;
+      aspect-ratio: 16/10;
     }
+    
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    
     .carousel-slides {
       display: flex;
       width: 100%;
       height: 100%;
-      transition: transform 0.3s ease;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    
     .carousel-slide {
       min-width: 100%;
       height: 100%;
-      display: flex;
-      align-items: center;
+      display: none;
       justify-content: center;
-      background: #050507;
+      align-items: center;
+      background: #0a0a0b;
     }
+    
+    .carousel-slide.active {
+      display: flex;
+    }
+    
     .carousel-slide img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
     }
-    .carousel-nav {
+    
+    .carousel-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #0a0a0b;
+    }
+    
+    .carousel-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    /* BOTÕES DE NAVEGAÇÃO */
+    .carousel-btn {
       position: absolute;
       top: 50%;
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: space-between;
-      padding: 0 0.25rem;
       transform: translateY(-50%);
-      pointer-events: none;
-      z-index: 10;
-    }
-    .carousel-btn {
-      pointer-events: auto;
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
       border: none;
-      background: rgba(15, 15, 20, 0.85);
-      color: var(--text);
-      font-size: 0.8rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      z-index: 20;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
     }
+    
     .carousel-btn:hover {
-      background: rgba(40, 40, 55, 0.95);
+      background: rgba(0, 0, 0, 0.9);
+      transform: translateY(-50%) scale(1.1);
     }
+    
+    .carousel-btn:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+    
+    .carousel-btn-prev {
+      left: 12px;
+    }
+    
+    .carousel-btn-next {
+      right: 12px;
+    }
+    
+    /* INDICADORES (DOTS) */
     .carousel-dots {
       position: absolute;
-      bottom: 6px;
-      left: 0;
-      right: 0;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
-      justify-content: center;
-      gap: 4px;
+      gap: 8px;
+      z-index: 15;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 6px 12px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
     }
+    
     .carousel-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.25);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 0;
     }
+    
+    .carousel-dot:hover {
+      background: rgba(255, 255, 255, 0.6);
+      transform: scale(1.2);
+    }
+    
     .carousel-dot.active {
       background: var(--accent);
+      transform: scale(1.3);
+    }
+    
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    
+    /* RESPONSIVO */
+    @media (max-width: 768px) {
+      .carousel {
+        aspect-ratio: 16/9;
+      }
+      
+      .carousel-btn {
+        width: 36px;
+        height: 36px;
+      }
+      
+      .carousel-btn-prev {
+        left: 8px;
+      }
+      
+      .carousel-btn-next {
+        right: 8px;
+      }
+      
+      .carousel-dots {
+        bottom: 8px;
+        gap: 6px;
+        padding: 4px 8px;
+      }
+      
+      .carousel-dot {
+        width: 6px;
+        height: 6px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .carousel {
+        aspect-ratio: 4/3;
+      }
+      
+      .carousel-btn {
+        width: 32px;
+        height: 32px;
+      }
+      
+      .carousel-btn-prev {
+        left: 6px;
+      }
+      
+      .carousel-btn-next {
+        right: 6px;
+      }
+      
+      .carousel-dots {
+        bottom: 6px;
+        gap: 4px;
+        padding: 3px 6px;
+      }
+      
+      .carousel-dot {
+        width: 5px;
+        height: 5px;
+      }
     }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
-    
-    /* Media queries para carousel responsivo */
     @media (max-width: 768px) {
       .carousel {
         height: 180px;
@@ -353,27 +477,43 @@
         <div class="carousel" data-index="0">
           {% set imagens = leilao.imagens or ([] if not leilao.imagem_url else [leilao.imagem_url]) %}
           {% if imagens %}
-          <div class="carousel-slides">
-            {% for img in imagens %}
-            <div class="carousel-slide">
-              <img src="{{ img }}" alt="Foto do veículo {{ leilao.titulo }}">
+          <div class="carousel-container">
+            <div class="carousel-slides">
+              {% for img in imagens %}
+              <div class="carousel-slide {% if loop.index0 == 0 %}active{% endif %}">
+                <img src="{{ img }}" alt="Foto do veículo {{ leilao.titulo }}" loading="lazy">
+              </div>
+              {% endfor %}
             </div>
-            {% endfor %}
-          </div>
-          <div class="carousel-nav">
-            <button type="button" class="carousel-btn" data-dir="prev">&#9664;</button>
-            <button type="button" class="carousel-btn" data-dir="next">&#9654;</button>
-          </div>
-          <div class="carousel-dots">
-            {% for img in imagens %}
-            <span class="carousel-dot {% if loop.index0 == 0 %}active{% endif %}"></span>
-            {% endfor %}
+            
+            {% if imagens|length > 1 %}
+            <button class="carousel-btn carousel-btn-prev" type="button" aria-label="Anterior">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </button>
+            <button class="carousel-btn carousel-btn-next" type="button" aria-label="Próximo">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </button>
+            {% endif %}
+            
+            {% if imagens|length > 1 %}
+            <div class="carousel-dots">
+              {% for img in imagens %}
+              <button type="button" class="carousel-dot {% if loop.index0 == 0 %}active{% endif %}" 
+                      data-index="{{ loop.index0 }}" aria-label="Ir para imagem {{ loop.index }}">
+                <span class="sr-only">{{ loop.index }}</span>
+              </button>
+              {% endfor %}
+            </div>
+            {% endif %}
           </div>
           {% else %}
-          <div class="carousel-slides">
-            <div class="carousel-slide">
-              <img src="https://via.placeholder.com/400x250?text=Ve%C3%ADculo+em+Leil%C3%A3o" alt="Veículo em leilão">
-            </div>
+          <div class="carousel-placeholder">
+            <img src="https://via.placeholder.com/400x250?text=Ve%C3%ADculo+em+Leil%C3%A3o" 
+                 alt="Veículo em leilão" loading="lazy">
           </div>
           {% endif %}
         </div>
@@ -440,48 +580,136 @@
           .finally(function() { atualizar.disabled = false; atualizar.textContent = 'Atualizar lista'; });
       });
 
-      // Carrossel por card - CORRIGIDO
+      // CARROSSEL MODERNO - DO ZERO
       var carousels = document.querySelectorAll('.carousel');
       carousels.forEach(function(carousel) {
         var slides = carousel.querySelector('.carousel-slides');
         if (!slides) return;
+        
         var slideEls = carousel.querySelectorAll('.carousel-slide');
         var dots = carousel.querySelectorAll('.carousel-dot');
+        var prevBtn = carousel.querySelector('.carousel-btn-prev');
+        var nextBtn = carousel.querySelector('.carousel-btn-next');
         var total = slideEls.length;
-        if (!total) return;
-
-        function setIndex(idx) {
-          var i = ((idx % total) + total) % total;
-          carousel.dataset.index = i.toString();
-          slides.style.transform = 'translateX(' + (-i * 100) + '%)';
-          dots.forEach(function(dot, j) {
-            dot.classList.toggle('active', j === i);
-          });
-        }
-
-        var navBtns = carousel.querySelectorAll('.carousel-btn');
-        if (navBtns.length > 0) {
-          navBtns.forEach(function(btn) {
-            btn.addEventListener('click', function(ev) {
-              ev.stopPropagation();
-              ev.preventDefault();
-              var dir = btn.getAttribute('data-dir');
-              var current = parseInt(carousel.dataset.index || '0', 10) || 0;
-              setIndex(dir === 'next' ? current + 1 : current - 1);
-            });
-          });
-        }
-
-        // Inicia na primeira imagem
-        setIndex(0);
         
-        // Auto-play opcional (5 segundos por slide)
-        if (total > 1) {
-          setInterval(function() {
-            var current = parseInt(carousel.dataset.index || '0', 10) || 0;
-            setIndex(current + 1);
-          }, 5000);
+        if (!total) return;
+        
+        var currentIndex = 0;
+        var autoplayInterval = null;
+        
+        function showSlide(index) {
+          index = Math.max(0, Math.min(index, total - 1));
+          currentIndex = index;
+          
+          // Esconder todos os slides
+          slideEls.forEach(function(slide, i) {
+            slide.classList.toggle('active', i === index);
+          });
+          
+          // Atualizar dots
+          if (dots.length > 0) {
+            dots.forEach(function(dot, i) {
+              dot.classList.toggle('active', i === index);
+            });
+          }
+          
+          // Atualizar dataset
+          carousel.dataset.index = index.toString();
         }
+        
+        function nextSlide() {
+          showSlide(currentIndex + 1);
+        }
+        
+        function prevSlide() {
+          showSlide(currentIndex - 1);
+        }
+        
+        function startAutoplay() {
+          if (autoplayInterval) clearInterval(autoplayInterval);
+          if (total > 1) {
+            autoplayInterval = setInterval(nextSlide, 5000);
+          }
+        }
+        
+        function stopAutoplay() {
+          if (autoplayInterval) {
+            clearInterval(autoplayInterval);
+            autoplayInterval = null;
+          }
+        }
+        
+        // Event listeners dos botões
+        if (prevBtn) {
+          prevBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            stopAutoplay();
+            prevSlide();
+            startAutoplay();
+          });
+        }
+        
+        if (nextBtn) {
+          nextBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            stopAutoplay();
+            nextSlide();
+            startAutoplay();
+          });
+        }
+        
+        // Event listeners dos dots
+        dots.forEach(function(dot, index) {
+          dot.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            stopAutoplay();
+            showSlide(index);
+            startAutoplay();
+          });
+        });
+        
+        // Touch/swipe support para mobile
+        var touchStartX = 0;
+        var touchEndX = 0;
+        
+        carousel.addEventListener('touchstart', function(e) {
+          touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        carousel.addEventListener('touchend', function(e) {
+          touchEndX = e.changedTouches[0].screenX;
+          var diff = touchStartX - touchEndX;
+          
+          if (Math.abs(diff) > 50) {
+            stopAutoplay();
+            if (diff > 0) {
+              nextSlide();
+            } else {
+              prevSlide();
+            }
+            startAutoplay();
+          }
+        }, { passive: true });
+        
+        // Pausar autoplay no hover
+        carousel.addEventListener('mouseenter', stopAutoplay);
+        carousel.addEventListener('mouseleave', startAutoplay);
+        
+        // Inicialização
+        showSlide(0);
+        startAutoplay();
+        
+        // Pausar autoplay quando página não estiver visível
+        document.addEventListener('visibilitychange', function() {
+          if (document.hidden) {
+            stopAutoplay();
+          } else {
+            startAutoplay();
+          }
+        });
       });
     })();
   </script>
