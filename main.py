@@ -16,6 +16,7 @@ from app.middleware.auth import AuthMiddleware
 from app.middleware.bot_protection import BotProtectionMiddleware
 from app.middleware.advanced_rate_limit import AdvancedRateLimitMiddleware
 from app.services.recaptcha import recaptcha_config
+from app.servico import servico_leiloes
 
 
 @asynccontextmanager
