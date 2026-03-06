@@ -153,9 +153,9 @@ class AdvancedRateLimitMiddleware(BaseHTTPMiddleware):
         violations = []
         
         for window_name, limit_name in [
-            ("requests_per_minute", 60),
-            ("requests_per_hour", 3600),
-            ("requests_per_day", 86400)
+            ("requests_per_minute", "requests_per_minute"),
+            ("requests_per_hour", "requests_per_hour"),
+            ("requests_per_day", "requests_per_day")
         ]:
             limit = limits.get(limit_name, self.config.default_limits[limit_name])
             
@@ -240,9 +240,9 @@ class AdvancedRateLimitMiddleware(BaseHTTPMiddleware):
         
         # Para cada janela, adicionar header
         for window_name, limit_name in [
-            ("requests_per_minute", 60),
-            ("requests_per_hour", 3600),
-            ("requests_per_day", 86400)
+            ("requests_per_minute", "requests_per_minute"),
+            ("requests_per_hour", "requests_per_hour"),
+            ("requests_per_day", "requests_per_day")
         ]:
             limit = limits.get(limit_name, self.config.default_limits[limit_name])
             
