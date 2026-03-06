@@ -101,58 +101,62 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                                 if chave in parent_text.lower():
                                     cidade = valor
                                     break
-                    else:
-                        # Se não encontrou código, tenta extrair do texto
-                        if "novo cruzeiro" in texto_link.lower():
-                            cidade = "Novo Cruzeiro"
-                        elif "tres pontas" in texto_link.lower():
-                            cidade = "Três Pontas"
-                        elif "divinopolis" in texto_link.lower():
-                            cidade = "Divinópolis"
-                        elif "turmalina" in texto_link.lower():
-                            cidade = "Turmalina"
-                        elif "bh" in texto_link.lower() or "belo horizonte" in texto_link.lower():
-                            cidade = "Belo Horizonte"
+                        else:
+                            # Se não encontrou código, tenta extrair do texto
+                            if "novo cruzeiro" in texto_link.lower():
+                                cidade = "Novo Cruzeiro"
+                            elif "tres pontas" in texto_link.lower():
+                                cidade = "Três Pontas"
+                            elif "divinopolis" in texto_link.lower():
+                                cidade = "Divinópolis"
+                            elif "turmalina" in texto_link.lower():
+                                cidade = "Turmalina"
+                            elif "bh" in texto_link.lower() or "belo horizonte" in texto_link.lower():
+                                cidade = "Belo Horizonte"
 
-                titulo = f"Edital {codigo}"
-                if cidade:
-                    titulo = f"{titulo} - {cidade.title()}"
-                descricao = texto_link
+                    # Garante que código sempre tenha valor
+                    if not codigo:
+                        codigo = f"Edital-{count+1}"
 
-                # **NOVA FEATURE**: Buscar o veículo mais valioso para usar como capa
-                imagem_destaque = "https://via.placeholder.com/400x250?text=Edital+Detran+MG"
-                try:
-                    veiculos_edital = await self.listar_veiculos_do_edital(edital_url)
-                    veiculos_com_valor = [v for v in veiculos_edital if v.valor_inicial and v.valor_inicial > 0]
-                    
-                    if veiculos_com_valor:
-                        mais_valioso = max(veiculos_com_valor, key=lambda v: v.valor_inicial)
-                        if mais_valioso.imagem_url:
-                            imagem_destaque = mais_valioso.imagem_url
-                        print(f"Edital {codigo}: Veículo mais valioso encontrado - {mais_valioso.titulo} (R$ {mais_valioso.valor_inicial:,.2f})")
-                except Exception as e:
-                    print(f"Erro ao buscar veículo mais valioso para {codigo}: {e}")
-                    # Usa imagem padrão em caso de erro
+                    titulo = f"Edital {codigo}"
+                    if cidade:
+                        titulo = f"{titulo} - {cidade.title()}"
+                    descricao = texto_link
 
-                veiculos.append(
-                    VeiculoLeilao(
-                        id=f"detran_mg_edital_{codigo.replace('/', '_')}_{count}",
-                        titulo=titulo,
-                        descricao=descricao,
-                        estado=Estado.MG,
-                        cidade=cidade,
-                        fonte=FonteLeilao.DETRAN_MG,
-                        url=edital_url,
-                        imagem_url=imagem_destaque,
-                        imagens=[
-                            imagem_destaque,
-                            "https://via.placeholder.com/400x250?text=Edital+Detran+MG+2",
-                        ],
+                    # **NOVA FEATURE**: Buscar o veículo mais valioso para usar como capa
+                    imagem_destaque = "https://via.placeholder.com/400x250?text=Edital+Detran+MG"
+                    try:
+                        veiculos_edital = await self.listar_veiculos_do_edital(edital_url)
+                        veiculos_com_valor = [v for v in veiculos_edital if v.valor_inicial and v.valor_inicial > 0]
+                        
+                        if veiculos_com_valor:
+                            mais_valioso = max(veiculos_com_valor, key=lambda v: v.valor_inicial)
+                            if mais_valioso.imagem_url:
+                                imagem_destaque = mais_valioso.imagem_url
+                            print(f"Edital {codigo}: Veículo mais valioso encontrado - {mais_valioso.titulo} (R$ {mais_valioso.valor_inicial:,.2f})")
+                    except Exception as e:
+                        print(f"Erro ao buscar veículo mais valioso para {codigo}: {e}")
+                        # Usa imagem padrão em caso de erro
+
+                    veiculos.append(
+                        VeiculoLeilao(
+                            id=f"detran_mg_edital_{codigo.replace('/', '_')}_{count}",
+                            titulo=titulo,
+                            descricao=descricao,
+                            estado=Estado.MG,
+                            cidade=cidade,
+                            fonte=FonteLeilao.DETRAN_MG,
+                            url=edital_url,
+                            imagem_url=imagem_destaque,
+                            imagens=[
+                                imagem_destaque,
+                                "https://via.placeholder.com/400x250?text=Edital+Detran+MG+2",
+                            ],
+                        )
                     )
-                )
-                count += 1
-                if count >= MAX_EDITAIS:
-                    break
+                    count += 1
+                    if count >= MAX_EDITAIS:
+                        break
 
         print(f"Encontrados {len(veiculos)} leilões no Detran MG")
         return veiculos
