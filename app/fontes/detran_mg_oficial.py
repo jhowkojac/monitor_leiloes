@@ -101,8 +101,6 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                                 if chave in parent_text.lower():
                                     cidade = valor
                                     break
-                            if cidade is None:
-                                cidade = None
                     else:
                         # Se não encontrou código, tenta extrair do texto
                         if "novo cruzeiro" in texto_link.lower():
@@ -115,19 +113,11 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                             cidade = "Turmalina"
                         elif "bh" in texto_link.lower() or "belo horizonte" in texto_link.lower():
                             cidade = "Belo Horizonte"
-                    elif "tres pontas" in bloco_texto.lower():
-                        cidade = "Três Pontas"
-                    elif "divinopolis" in bloco_texto.lower():
-                        cidade = "Divinópolis"
-                    elif "turmalina" in bloco_texto.lower():
-                        cidade = "Turmalina"
-                    elif "bh" in bloco_texto.lower() or "belo horizonte" in bloco_texto.lower():
-                        cidade = "Belo Horizonte"
 
                 titulo = f"Edital {codigo}"
                 if cidade:
                     titulo = f"{titulo} - {cidade.title()}"
-                descricao = bloco_texto
+                descricao = texto_link
 
                 # **NOVA FEATURE**: Buscar o veículo mais valioso para usar como capa
                 imagem_destaque = "https://via.placeholder.com/400x250?text=Edital+Detran+MG"
