@@ -30,22 +30,20 @@ async def lifespan(app: FastAPI):
     import asyncio
     try:
         print("Inicializando cache com dados dos leiloes...")
-        # Inicia em background para não bloquear startup
-        task = asyncio.create_task(servico_leiloes.atualizar())
-        print("Cache sendo inicializado em background...")
         
-        # Espera um pouco para ter dados iniciais
-        await asyncio.sleep(3)
-        
-        # Força uma atualização para garantir dados
+        # Força atualização síncrona inicial para garantir dados
         try:
             await servico_leiloes.atualizar()
             print("Cache inicializado com sucesso!")
         except Exception as e:
             print(f"Erro na atualizacao inicial: {e}")
+            import traceback
+            traceback.print_exc()
             
     except Exception as e:
         print(f"Erro ao inicializar cache: {e}")
+        import traceback
+        traceback.print_exc()
         print("Use /init para forcar atualizacao manual")
     
     yield
