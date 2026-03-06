@@ -128,6 +128,12 @@ async def dashboard_page(request: Request):
     """Página do dashboard administrativo."""
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
+@app.get("/sw.js")
+async def service_worker():
+    """Serve o service worker do PWA."""
+    from fastapi.responses import FileResponse
+    return FileResponse("sw.js", media_type="application/javascript")
+
 # Serve arquivos estáticos (se necessário)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
