@@ -139,6 +139,9 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                     if not codigo:
                         codigo = f"Edital-{count+1}"
 
+                    # **DEBUG**: Forçar cidade para teste
+                    cidade = "Belo Horizonte"  # Temporário para garantir exibição
+
                     # Extrair data do edital se disponível
                     data_leilao = None
                     try:
