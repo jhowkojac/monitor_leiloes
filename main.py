@@ -98,6 +98,21 @@ else:
 # Adicionar middleware de autenticação
 app.add_middleware(AuthMiddleware)
 
+# Configurar CORS para frontend React
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://monitor-leiloes-frontend.onrender.com",
+        "https://monitor-leiloes-frontend.vercel.app", 
+        "https://monitor-leiloes-frontend.netlify.app",
+        "http://localhost:5173",
+        "http://localhost:3000"
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
+
 # Inclui rotas
 from app.routers.main import router
 app.include_router(router)

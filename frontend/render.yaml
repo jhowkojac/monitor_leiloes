@@ -1,0 +1,27 @@
+services:
+  # Frontend React - Monitor de Leilões
+  - type: web
+    name: monitor-leiloes-frontend
+    env: static
+    buildCommand: npm run build
+    publishDir: dist
+    envVars:
+      - key: NODE_ENV
+        value: production
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://monitor-leiloes.onrender.com/api/:splat
+      - type: file
+        source: /**
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
+      - path: /*
+        name: Pragma
+        value: no-cache
+      - path: /*
+        name: Expires
+        value: 0
