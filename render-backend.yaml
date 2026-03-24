@@ -1,0 +1,15 @@
+# Configuração para backend API (separado do frontend)
+services:
+  # Backend FastAPI
+  - type: web
+    name: monitor-leiloes-backend
+    env: node
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8000
+    healthCheckPath: /docs
+    autoDeploy: true

@@ -1,0 +1,33 @@
+# Configuração para deploy do frontend React no Render
+# Substituir o render.yaml existente do backend
+
+services:
+  # Frontend React - Monitor de Leilões
+  - type: web
+    name: monitor-leiloes
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    publishDir: frontend/dist
+    envVars:
+      - key: NODE_ENV
+        value: production
+    routes:
+      # Redirecionar API para backend (mesmo projeto)
+      - type: rewrite
+        source: /api/*
+        destination: /api/:splat
+      # SPA routing - todas as rotas para index.html
+      - type: file
+        source: /**
+        destination: /index.html
+    headers:
+      # Cache control para SPA
+      - path: /*
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
+      - path: /*
+        name: Pragma
+        value: no-cache
+      - path: /*
+        name: Expires
+        value: 0
