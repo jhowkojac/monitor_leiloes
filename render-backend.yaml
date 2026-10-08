@@ -3,13 +3,19 @@ services:
   # Backend FastAPI
   - type: web
     name: monitor-leiloes-backend
-    env: node
+    env: python
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
-      - key: NODE_ENV
+      - key: ENVIRONMENT
         value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: API_TOKEN
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
       - key: PORT
         value: 8000
-    healthCheckPath: /docs
+    healthCheckPath: /health
     autoDeploy: true

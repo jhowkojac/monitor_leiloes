@@ -8,8 +8,12 @@ services:
     envVars:
       - key: ENVIRONMENT
         value: production
+      - key: SECRET_KEY
+        generateValue: true
       - key: API_TOKEN
-        value: super_secure_token_2024_change_me_in_production
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
       - key: RATE_LIMIT_CALLS
         value: "50"
       - key: RATE_LIMIT_PERIOD
