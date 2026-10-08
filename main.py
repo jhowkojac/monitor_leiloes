@@ -27,26 +27,6 @@ async def lifespan(app: FastAPI):
     print("Servicos de leiloes configurados")
     print("Seguranca configurada")
     
-    # Inicializa o cache com dados (em background para não bloquear)
-    import asyncio
-    try:
-        print("Inicializando cache com dados dos leiloes...")
-        
-        # Força atualização síncrona inicial para garantir dados
-        try:
-            await servico_leiloes.atualizar()
-            print("Cache inicializado com sucesso!")
-        except Exception as e:
-            print(f"Erro na atualizacao inicial: {e}")
-            import traceback
-            traceback.print_exc()
-            
-    except Exception as e:
-        print(f"Erro ao inicializar cache: {e}")
-        import traceback
-        traceback.print_exc()
-        print("Use /init para forcar atualizacao manual")
-    
     yield
     # Shutdown
     print("Monitor de Leiloes encerrando...")

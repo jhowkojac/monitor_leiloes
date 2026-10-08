@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     
     class Config:
         env_file = ".env"
+        extra = "allow"  # Permitir campos extras do .env
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
