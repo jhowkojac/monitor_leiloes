@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: monitor-leiloes
+    name: monitor-leiloes-backend
     env: python
     plan: free
     buildCommand: "pip install -r requirements.txt"
