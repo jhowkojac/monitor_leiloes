@@ -18,3 +18,27 @@ __pycache__/
 # Banco de dados local (se houver)
 *.db
 *.sqlite3
+
+# Cobertura de testes
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build/dist
+dist/
+build/
+*.egg-info/

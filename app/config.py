@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
+import os
 
 
 class Settings(BaseSettings):
@@ -12,8 +13,8 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     DEBUG: bool = False
     
-    # Configurações de segurança
-    SECRET_KEY: str = "your-secret-key-change-in-production"
+    # Configurações de segurança - SEM DEFAULTS por segurança
+    SECRET_KEY: str = None  # Deve vir de variável de ambiente
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -30,6 +31,20 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Validação crítica: SECRET_KEY é obrigatório
+        if not self.SECRET_KEY:
+            raise ValueError(
+                "SECRET_KEY não está definido. "
+                "Defina a variável de ambiente SECRET_KEY antes de iniciar a aplicação. "
+                "Em desenvolvimento, crie um arquivo .env com: SECRET_KEY=seu-secret-aqui"
+            )
+
 
 # Instância global das configurações
-settings = Settings()
+try:
+    settings = Settings()
+except ValueError as e:
+    print(f"ERRO DE CONFIGURAÇÃO: {e}")
+    raise

@@ -12,11 +12,26 @@ class SecurityConfig:
     RATE_LIMIT_CALLS = int(os.getenv("RATE_LIMIT_CALLS", "100"))
     RATE_LIMIT_PERIOD = int(os.getenv("RATE_LIMIT_PERIOD", "60"))  # segundos
     
-    # Tokens
-    API_TOKEN = os.getenv("API_TOKEN", "change_this_in_production_2024")
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change_this_jwt_secret_in_production")
+    # Tokens - SEM DEFAULTS por segurança
+    API_TOKEN = os.getenv("API_TOKEN")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     JWT_ALGORITHM = "HS256"
     JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "30"))
+
+    @classmethod
+    def validate_required_secrets(cls):
+        """Valida que todos os secrets obrigatórios estão definidos"""
+        missing = []
+        if not cls.API_TOKEN:
+            missing.append("API_TOKEN")
+        if not cls.JWT_SECRET_KEY:
+            missing.append("JWT_SECRET_KEY")
+        
+        if missing:
+            raise ValueError(
+                f"Variáveis de ambiente obrigatórias não definidas: {', '.join(missing)}. "
+                "Defina essas variáveis no arquivo .env ou nas configurações de deploy."
+            )
     
     # CORS
     ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:8000,http://127.0.0.1:8000").split(",")
@@ -222,4 +237,9 @@ class TestingSecurityConfig(SecurityConfig):
 
 
 # Configuração global
-security_config = Environment.get_config()
+try:
+    SecurityConfig.validate_required_secrets()
+    security_config = Environment.get_config()
+except ValueError as e:
+    print(f"ERRO DE CONFIGURAÇÃO: {e}")
+    raise

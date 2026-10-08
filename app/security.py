@@ -195,7 +195,12 @@ class APITokenMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, protected_paths: list = None):
         super().__init__(app)
         self.protected_paths = protected_paths or ["/api/leiloes/atualizar"]
-        self.api_token = os.getenv("API_TOKEN", "default_token_change_in_production")
+        self.api_token = os.getenv("API_TOKEN")
+        if not self.api_token:
+            raise ValueError(
+                "API_TOKEN não está definido. "
+                "Defina a variável de ambiente API_TOKEN antes de iniciar a aplicação."
+            )
     
     async def dispatch(self, request: Request, call_next):
         # Verifica se a rota precisa de proteção

@@ -94,6 +94,10 @@ async def pagina_inicial(request: Request):
 @router.get("/debug", response_class=HTMLResponse)
 async def debug_info(request: Request):
     """Endpoint de debug para verificar status do sistema."""
+    # Bloquear em produção
+    if os.getenv("ENVIRONMENT") == "production":
+        raise HTTPException(status_code=404, detail="Not found")
+    
     try:
         # Verifica cache
         leiloes = servico_leiloes.listar()

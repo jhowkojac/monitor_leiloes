@@ -52,13 +52,17 @@ async def lifespan(app: FastAPI):
     print("Monitor de Leiloes encerrando...")
 
 
+# Configuração de docs/debug baseada no ambiente
+docs_url = "/docs" if os.getenv("ENVIRONMENT") != "production" else None
+redoc_url = "/redoc" if os.getenv("ENVIRONMENT") != "production" else None
+
 app = FastAPI(
     title="Monitor de Leilões - VERSÃO CORRIGIDA",
     description="API para monitoramento de leilões de veículos",
     version="1.0.2",  # Forçar deploy com import os corrigido
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc"
+    docs_url=docs_url,
+    redoc_url=redoc_url
 )
 
 # Configura middlewares de segurança (em ordem inversa de execução)
