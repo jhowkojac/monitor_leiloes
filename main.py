@@ -1,6 +1,7 @@
 """Monitor de Leilões - FastAPI Application"""
 import os
 from contextlib import asynccontextmanager
+from jinja2 import Environment, FileSystemLoader
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -18,8 +19,9 @@ from app.middleware.advanced_rate_limit import AdvancedRateLimitMiddleware
 from app.services.recaptcha import recaptcha_config
 from app.servico import servico_leiloes
 
-# Configuração de templates
-templates = Jinja2Templates(directory="app/templates", auto_reload=False)
+# Configuração de templates com cache desabilitado
+env = Environment(loader=FileSystemLoader("app/templates"), autoescape=True, cache_size=0)
+templates = Jinja2Templates(env=env)
 
 
 @asynccontextmanager

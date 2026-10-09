@@ -2,6 +2,7 @@
 from typing import Optional
 import os
 from datetime import datetime
+from jinja2 import Environment, FileSystemLoader
 
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse
@@ -13,7 +14,9 @@ from app.servico import servico_leiloes
 from app.middleware.auth import get_current_user_optional
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates", auto_reload=False)
+# Configurar Jinja2 com cache desabilitado para evitar erros
+env = Environment(loader=FileSystemLoader("app/templates"), autoescape=True, cache_size=0)
+templates = Jinja2Templates(env=env)
 
 
 @router.get("/login", response_class=HTMLResponse)
