@@ -18,6 +18,9 @@ from app.middleware.advanced_rate_limit import AdvancedRateLimitMiddleware
 from app.services.recaptcha import recaptcha_config
 from app.servico import servico_leiloes
 
+# Configuração de templates
+templates = Jinja2Templates(directory="app/templates")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -116,15 +119,6 @@ from app.routers.analytics import router as analytics_router
 app.include_router(analytics_router, prefix="/api/analytics", tags=["analytics"])
 from app.routers.theme import router as theme_router
 app.include_router(theme_router, prefix="/api/theme", tags=["theme"])
-
-# Dashboard route
-from fastapi import Request
-from fastapi.responses import HTMLResponse
-
-@app.get("/dashboard", response_class=HTMLResponse)
-async def dashboard_page(request: Request):
-    """Página do dashboard administrativo."""
-    return templates.TemplateResponse("dashboard.html", {"request": request})
 
 @app.get("/sw.js")
 async def service_worker():
