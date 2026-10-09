@@ -11,10 +11,13 @@ services:
         value: production
       - key: SECRET_KEY
         generateValue: true
+        sync: false
       - key: API_TOKEN
         generateValue: true
+        sync: false
       - key: JWT_SECRET_KEY
         generateValue: true
+        sync: false
       - key: PORT
         value: 8000
     healthCheckPath: /health
