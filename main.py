@@ -19,7 +19,7 @@ from app.services.recaptcha import recaptcha_config
 from app.servico import servico_leiloes
 
 # Configuração de templates
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory="app/templates", auto_reload=False)
 
 
 @asynccontextmanager

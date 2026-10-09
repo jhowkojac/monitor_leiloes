@@ -13,7 +13,7 @@ from app.servico import servico_leiloes
 from app.middleware.auth import get_current_user_optional
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory="app/templates", auto_reload=False)
 
 
 @router.get("/login", response_class=HTMLResponse)
@@ -81,12 +81,14 @@ async def pagina_inicial(request: Request):
         )
         for v in leiloes
     ]
+    # Converter para dict para evitar problemas com Jinja2
+    resumos_dict = [r.model_dump() for r in resumos]
     return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
-            "leiloes": resumos,
-            "total": len(resumos),  # Adicionando a variável total
+            "leiloes": resumos_dict,
+            "total": len(resumos_dict),
         },
     )
 
