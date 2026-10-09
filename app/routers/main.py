@@ -29,7 +29,7 @@ async def pagina_login(request: Request):
         from fastapi.responses import RedirectResponse
         return RedirectResponse(url="/", status_code=302)
     
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="login.html")
 
 
 @router.get("/setup-2fa", response_class=HTMLResponse)
@@ -42,7 +42,7 @@ async def pagina_setup_2fa(request: Request):
         from fastapi.responses import RedirectResponse
         return RedirectResponse(url="/login", status_code=302)
     
-    return templates.TemplateResponse("setup_2fa.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="setup_2fa.html")
 
 
 @router.get("/dashboard", response_class=HTMLResponse)
@@ -61,7 +61,7 @@ async def pagina_dashboard(request: Request):
         from fastapi.responses import RedirectResponse
         return RedirectResponse(url="/", status_code=302)
     
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="dashboard.html")
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -87,9 +87,9 @@ async def pagina_inicial(request: Request):
     # Converter para dict para evitar problemas com Jinja2
     resumos_dict = [r.model_dump() for r in resumos]
     return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
+        request=request,
+        name="index.html",
+        context={
             "leiloes": resumos_dict,
             "total": len(resumos_dict),
         },
@@ -137,18 +137,18 @@ async def debug_info(request: Request):
         }
         
         return templates.TemplateResponse(
-            "debug.html",
-            {
-                "request": request,
+            request=request,
+            name="debug.html",
+            context={
                 "debug_info": debug_info,
                 "leiloes": leiloes[:5],  # Primeiros 5 para debug
             },
         )
     except Exception as e:
         return templates.TemplateResponse(
-            "debug.html",
-            {
-                "request": request,
+            request=request,
+            name="debug.html",
+            context={
                 "erro": f"Erro no debug: {str(e)}",
             },
         )
@@ -163,9 +163,9 @@ async def pagina_edital(id_: str, request: Request):
 
     veiculos = await servico_leiloes.listar_veiculos_por_edital(id_)
     return templates.TemplateResponse(
-        "edital.html",
-        {
-            "request": request,
+        request=request,
+        name="edital.html",
+        context={
             "edital": edital,
             "veiculos": veiculos,
         },
@@ -270,9 +270,9 @@ async def pagina_veiculo_detalhes(veiculo_id: str, request: Request):
         detran_id = veiculo_id.replace("detran_mg_edital_veiculo_", "").split("_", 3)[-1]
         
         return templates.TemplateResponse(
-            "veiculo_detalhes.html",
-            {
-                "request": request,
+            request=request,
+            name="veiculo_detalhes.html",
+            context={
                 "veiculo": veiculo_encontrado,
                 "edital": edital_encontrado,
                 "veiculo_id": veiculo_id,
@@ -373,9 +373,9 @@ async def pagina_lote_detalhes(lote_id: str, request: Request):
         dados_adicionais = _preparar_dados_adicionais(lote_encontrado, valor_fipe)
         
         return templates.TemplateResponse(
-            "lote_detalhes.html",
-            {
-                "request": request,
+            request=request,
+            name="lote_detalhes.html",
+            context={
                 "lote": lote_encontrado,
                 "edital": edital_encontrado,
                 "lote_id": lote_id,
