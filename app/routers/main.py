@@ -214,12 +214,28 @@ async def pagina_veiculo_detalhes(veiculo_id: str, request: Request):
     """Página de detalhes do veículo com fotos em alta resolução."""
     try:
         print(f"🔍 Buscando veículo ID: {veiculo_id}")
-        
+
+        # Se o ID termina com "_lote" (sem número), buscar o primeiro lote do edital
+        if veiculo_id.endswith("_lote"):
+            # Extrair o ID do edital do ID do lote
+            edital_id_base = veiculo_id.replace("_lote", "")
+            # Buscar no cache
+            leiloes_cache = servico_leiloes.listar()
+            for leilao in leiloes_cache:
+                if edital_id_base in leilao.id:
+                    print(f"🔄 ID incompleto, buscando primeiro lote do edital: {leilao.titulo}")
+                    from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
+                    veiculos = await fonte_detran_mg_oficial.listar_veiculos_do_edital(leilao.url)
+                    if veiculos:
+                        veiculo_id = veiculos[0].id  # Usa o primeiro lote
+                        print(f"✅ Usando primeiro lote: {veiculo_id}")
+                        break
+
         # Primeiro tenta encontrar no cache local
         leiloes_cache = servico_leiloes.listar()
         veiculo_encontrado = None
         edital_encontrado = None
-        
+
         # Procura nos leilões em cache
         for leilao in leiloes_cache:
             if veiculo_id in leilao.id:
@@ -227,14 +243,14 @@ async def pagina_veiculo_detalhes(veiculo_id: str, request: Request):
                 # Busca os veículos deste edital específico
                 from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
                 veiculos = await fonte_detran_mg_oficial.listar_veiculos_do_edital(leilao.url)
-                
+
                 for veiculo in veiculos:
                     if veiculo.id == veiculo_id:
                         veiculo_encontrado = veiculo
                         edital_encontrado = leilao
                         print(f"✅ Veículo encontrado: {veiculo.titulo}")
                         break
-                
+
                 if veiculo_encontrado:
                     break
         
@@ -293,12 +309,28 @@ async def pagina_lote_detalhes(lote_id: str, request: Request):
     """Página de detalhes do lote com design moderno e integração FIPE"""
     try:
         print(f"🔍 Buscando lote ID: {lote_id}")
-        
+
+        # Se o ID termina com "_lote" (sem número), buscar o primeiro lote do edital
+        if lote_id.endswith("_lote"):
+            # Extrair o ID do edital do ID do lote
+            edital_id_base = lote_id.replace("_lote", "")
+            # Buscar no cache
+            leiloes_cache = servico_leiloes.listar()
+            for leilao in leiloes_cache:
+                if edital_id_base in leilao.id:
+                    print(f"🔄 ID incompleto, buscando primeiro lote do edital: {leilao.titulo}")
+                    from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
+                    veiculos = await fonte_detran_mg_oficial.listar_veiculos_do_edital(leilao.url)
+                    if veiculos:
+                        lote_id = veiculos[0].id  # Usa o primeiro lote
+                        print(f"✅ Usando primeiro lote: {lote_id}")
+                        break
+
         # Primeiro tenta encontrar no cache local
         leiloes_cache = servico_leiloes.listar()
         lote_encontrado = None
         edital_encontrado = None
-        
+
         # Procura nos leilões em cache
         for leilao in leiloes_cache:
             if lote_id in leilao.id:
@@ -306,14 +338,14 @@ async def pagina_lote_detalhes(lote_id: str, request: Request):
                 # Busca os veículos deste edital específico
                 from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
                 veiculos = await fonte_detran_mg_oficial.listar_veiculos_do_edital(leilao.url)
-                
+
                 for veiculo in veiculos:
                     if veiculo.id == lote_id:
                         lote_encontrado = veiculo
                         edital_encontrado = leilao
                         print(f"✅ Lote encontrado: {veiculo.titulo}")
                         break
-                
+
                 if lote_encontrado:
                     break
         
