@@ -128,23 +128,34 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                     tabelas = soup.find_all("table")
                     if not tabelas:
                         break  # Não tem mais conteúdo, fim da paginação
-                    
+
                     tabela = tabelas[0]
                     linhas = tabela.find_all("tr")
-                    
+
+                    # Extrair código do edital da URL
+                    edital_codigo_match = re.search(r'/lotes/lista-lotes/(\d+)/(\d+)', edital_url)
+                    if edital_codigo_match:
+                        edital_id = f"{edital_codigo_match.group(1)}_{edital_codigo_match.group(2)}"
+                    else:
+                        edital_id = abs(hash(edital_url))
+
                     for idx, tr in enumerate(linhas):
                         if tr.find("th"):
                             continue
-                        
+
                         colunas = [td.get_text(strip=True) for td in tr.find_all("td")]
                         if not colunas:
                             continue
-                        
+
                         titulo = colunas[0] or (titulo_edital or "Veículo em leilão")
                         descricao = " | ".join(colunas[1:]) if len(colunas) > 1 else None
-                        
+
+                        # ID consistente baseado no número do lote
+                        lote_numero = str((pagina_atual-1)*8 + idx + 1)
+                        veiculo_id = f"detran_mg_edital_{edital_id}_lote_{lote_numero}"
+
                         veiculo = VeiculoLeilao(
-                            id=f"detran_mg_edital_veiculo_{pagina_atual}_{idx}_{abs(hash(edital_url))}",
+                            id=veiculo_id,
                             titulo=titulo,
                             descricao=descricao,
                             estado=Estado.MG,
@@ -158,17 +169,32 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                     for idx, card in enumerate(cards_veiculos):
                         # Extrair informações do card
                         texto_completo = card.get_text(" ", strip=True)
-                        
+
                         # Tentar extrair número do lote
                         lote_span = card.find("span")
-                        lote_numero = lote_span.get_text(strip=True) if lote_span else f"Lote {(pagina_atual-1)*8 + idx + 1}"
-                        
+                        lote_numero_texto = lote_span.get_text(strip=True) if lote_span else f"{(pagina_atual-1)*8 + idx + 1}"
+
+                        # Extrair apenas o número (remove "Lote" se tiver)
+                        import re
+                        lote_numero_match = re.search(r'\d+', lote_numero_texto)
+                        lote_numero = lote_numero_match.group(0) if lote_numero_match else lote_numero_texto
+
+                        # ID consistente baseado no número do lote e código do edital
+                        # Extrair código do edital da URL
+                        edital_codigo_match = re.search(r'/lotes/lista-lotes/(\d+)/(\d+)', edital_url)
+                        if edital_codigo_match:
+                            edital_id = f"{edital_codigo_match.group(1)}_{edital_codigo_match.group(2)}"
+                        else:
+                            edital_id = abs(hash(edital_url))
+
+                        veiculo_id = f"detran_mg_edital_{edital_id}_lote_{lote_numero}"
+
                         # Tentar extrair estado de conservação
                         spans = card.find_all("span")
                         estado_conservacao = "N/A"
                         if len(spans) > 1:
                             estado_conservacao = spans[1].get_text(strip=True)
-                        
+
                         # Tentar extrair valor
                         valor = None
                         valor_text = ""
@@ -178,7 +204,6 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                             if "R$" in texto_p:
                                 valor_text = texto_p
                                 # Tentar extrair valor numérico
-                                import re
                                 valor_match = re.search(r"R\$\s*([\d\.]+,\d{2})", texto_p)
                                 if valor_match:
                                     valor_str = valor_match.group(1).replace(".", "").replace(",", ".")
@@ -187,11 +212,11 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                                     except ValueError:
                                         pass
                                 break
-                        
+
                         # **CORREÇÃO DAS IMAGENS**: Extrair URLs reais das imagens
                         imagem_url = None
                         imagens = []
-                        
+
                         imgs = card.find_all("img")
                         for img in imgs:
                             src = img.get("src", "")
@@ -204,20 +229,20 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                                     imagem_url = urljoin(BASE_URL, src)
                                 else:
                                     imagem_url = urljoin(edital_url, src)
-                                
+
                                 imagens.append(imagem_url)
-                        
+
                         # Se não encontrou imagens, usa placeholder
                         if not imagens:
                             imagem_url = "https://via.placeholder.com/400x250?text=Veiculo+Detran+MG"
                             imagens = [imagem_url]
-                        
+
                         # Tentar extrair marca/modelo do texto completo
                         marca_modelo = texto_completo
-                        
+
                         # Padrão: texto vem como "Lote 1-CONSERVADOAguardeHONDA/CG 125 FAN KS 2010-R$ 1.200,00Login Obrigatório"
                         # Vou extrair de forma mais inteligente
-                        
+
                         # Remove o número do lote
                         if lote_span:
                             lote_text = lote_span.get_text(strip=True)
@@ -257,7 +282,7 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                             descricao += f" | {valor_text}"
                         
                         veiculo = VeiculoLeilao(
-                            id=f"detran_mg_edital_veiculo_{pagina_atual}_{idx}_{abs(hash(edital_url))}",
+                            id=veiculo_id,
                             titulo=titulo,
                             descricao=descricao,
                             valor_inicial=valor,
