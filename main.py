@@ -1,5 +1,6 @@
 """Monitor de Leilões - FastAPI Application"""
 import os
+import logging
 from contextlib import asynccontextmanager
 from jinja2 import Environment, FileSystemLoader
 from fastapi import FastAPI, Request
@@ -19,6 +20,10 @@ from app.middleware.advanced_rate_limit import AdvancedRateLimitMiddleware
 from app.services.recaptcha import recaptcha_config
 from app.servico import servico_leiloes
 
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Configuração de templates com cache desabilitado
 env = Environment(loader=FileSystemLoader("app/templates"), autoescape=True, cache_size=0)
 templates = Jinja2Templates(env=env)
@@ -28,20 +33,22 @@ templates = Jinja2Templates(env=env)
 async def lifespan(app: FastAPI):
     """Gerencia o ciclo de vida da aplicação."""
     # Startup
-    print("Monitor de Leiloes iniciando...")
-    print("Carregando leilões do Detran MG...")
+    logger.info("Monitor de Leiloes iniciando...")
+    logger.info("Carregando leilões do Detran MG...")
     try:
-        await servico_leiloes.atualizar()
-        print(f"Leilões carregados com sucesso!")
+        leiloes = await servico_leiloes.atualizar()
+        logger.info(f"Leilões carregados com sucesso! Total: {len(leiloes)}")
     except Exception as e:
-        print(f"Erro ao carregar leilões: {e}")
-        print("Continuando com cache vazio...")
-    print("Servicos de leiloes configurados")
-    print("Seguranca configurada")
+        logger.error(f"Erro ao carregar leilões: {e}")
+        import traceback
+        traceback.print_exc()
+        logger.info("Continuando com cache vazio...")
+    logger.info("Servicos de leiloes configurados")
+    logger.info("Seguranca configurada")
 
     yield
     # Shutdown
-    print("Monitor de Leiloes encerrando...")
+    logger.info("Monitor de Leiloes encerrando...")
 
 
 # Configuração de docs/debug baseada no ambiente
