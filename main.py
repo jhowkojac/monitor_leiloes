@@ -29,9 +29,16 @@ async def lifespan(app: FastAPI):
     """Gerencia o ciclo de vida da aplicação."""
     # Startup
     print("Monitor de Leiloes iniciando...")
+    print("Carregando leilões do Detran MG...")
+    try:
+        await servico_leiloes.atualizar()
+        print(f"Leilões carregados com sucesso!")
+    except Exception as e:
+        print(f"Erro ao carregar leilões: {e}")
+        print("Continuando com cache vazio...")
     print("Servicos de leiloes configurados")
     print("Seguranca configurada")
-    
+
     yield
     # Shutdown
     print("Monitor de Leiloes encerrando...")

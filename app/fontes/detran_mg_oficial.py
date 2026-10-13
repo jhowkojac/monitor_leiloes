@@ -20,9 +20,8 @@ from app.models import Estado, FonteLeilao, VeiculoLeilao
 
 
 BASE_URL = "https://leilao.detran.mg.gov.br/"
-# Busca todos os leilões em aberto sem limite
-# para ter dados completos do sistema
-MAX_EDITAIS = 999  # Praticamente sem limite
+# Limitar para não demorar muito no carregamento
+MAX_EDITAIS = 10  # Limitado para performance
 
 
 class FonteDetranMGOficial(FonteLeilaoBase):
@@ -39,7 +38,7 @@ class FonteDetranMGOficial(FonteLeilaoBase):
 
     async def listar_leiloes(self) -> List[VeiculoLeilao]:
         veiculos: List[VeiculoLeilao] = []
-        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
             resp = await client.get(BASE_URL)
             resp.raise_for_status()
             soup = BeautifulSoup(resp.text, "html.parser")
@@ -50,11 +49,11 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                 href = link.get("href")
                 if not href:
                     continue
-                
+
                 # **NOVA ESTRUTURA**: Procura por links de lotes
                 if "/lotes/lista-lotes/" in href:
                     edital_url = urljoin(BASE_URL, href)
-                    
+
                     # Extrai ID e ano da URL: /lotes/lista-lotes/3097/2026
                     import re
                     match = re.search(r'/lotes/lista-lotes/(\d+)/(\d+)', href)
@@ -64,171 +63,9 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                         codigo = f"{lote_id}/{ano}"
                     else:
                         codigo = f"Edital-{count+1}"
-                    
-                    # Tenta extrair informações do link
-                    texto_link = link.get_text(" ", strip=True)
-                    
-                    # Extrai informações do texto se disponível
-                    cidade = None
-                    veiculo_info = texto_link
-                    
-                    # Procura por padrões no texto
-                    if texto_link:
-                        # Padrão: "Edital de Leilão 3097/2026"
-                        edital_match = re.search(r'(\d{4,5}/\d{4})', texto_link)
-                        if edital_match:
-                            codigo = edital_match.group(1)
-                        
-                        # Tenta extrair cidade do texto ao redor
-                        parent = link.find_parent(["div", "article", "tr", "li", "td"])
-                        if parent:
-                            parent_text = parent.get_text(" ", strip=True)
-                            # Procura por cidades conhecidas
-                            cidades_conhecidas = {
-                                "novo cruzeiro": "Novo Cruzeiro",
-                                "tres pontas": "Três Pontas", 
-                                "divinopolis": "Divinópolis",
-                                "turmalina": "Turmalina",
-                                "juiz de fora": "Juiz de Fora",
-                                "belo horizonte": "Belo Horizonte",
-                                "uberaba": "Uberaba",
-                                "uberlândia": "Uberlândia",
-                                "montes claros": "Montes Claros",
-                                "contagem": "Contagem",
-                                "betim": "Betim",
-                                "itajuba": "Itajubá",
-                                "pouso alegre": "Pouso Alegre",
-                                "patos de minas": "Patos de Minas",
-                                "sao joao del rei": "São João del Rei",
-                                "ouro preto": "Ouro Preto",
-                                "mariana": "Mariana",
-                                "sabara": "Sabará",
-                                "itabira": "Itabira",
-                                "conselheiro lafaiete": "Conselheiro Lafaiete",
-                                "nova lima": "Nova Lima",
-                                "ribeirao das neves": "Ribeirão das Neves",
-                                "ibirité": "Ibirité",
-                                "vespasiano": "Vespasiano"
-                            }
-                            
-                            for chave, valor in cidades_conhecidas.items():
-                                if chave in parent_text.lower():
-                                    cidade = valor
-                                    break
-                        else:
-                            # Se não encontrou cidade no parent, tenta no texto do link
-                            if not cidade:
-                                for chave, valor in cidades_conhecidas.items():
-                                    if chave in texto_link.lower():
-                                        cidade = valor
-                                        break
-                    else:
-                        # Se não encontrou código, tenta extrair do texto
-                        if "novo cruzeiro" in texto_link.lower():
-                            cidade = "Novo Cruzeiro"
-                        elif "tres pontas" in texto_link.lower():
-                            cidade = "Três Pontas"
-                        elif "divinopolis" in texto_link.lower():
-                            cidade = "Divinópolis"
-                        elif "turmalina" in texto_link.lower():
-                            cidade = "Turmalina"
-                        elif "bh" in texto_link.lower() or "belo horizonte" in texto_link.lower():
-                            cidade = "Belo Horizonte"
 
-                    # Garante que código sempre tenha valor
-                    if not codigo:
-                        codigo = f"Edital-{count+1}"
-
-                    # **DEBUG**: Forçar cidade para teste
-                    cidade = "Belo Horizonte"  # Temporário para garantir exibição
-
-                    # Extrair data do edital se disponível
-                    data_leilao = None
-                    try:
-                        # Tenta buscar data da página do edital
-                        async with httpx.AsyncClient(timeout=10.0) as client:
-                            resp = await client.get(edital_url)
-                            resp.raise_for_status()
-                            soup_edital = BeautifulSoup(resp.text, "html.parser")
-                            
-                            # Procura por informações de data
-                            data_text = None
-                            
-                            # Padrões comuns de data
-                            for pattern in ["Data do leilão", "Data:", "Data do Leilão:", "Leilão:", "DATA"]:
-                                elements = soup_edital.find_all(string=lambda text: text and pattern in text)
-                                if elements:
-                                    data_text = elements[0]
-                                    break
-                            
-                            # Se não encontrou nos textos, procura em elementos
-                            if not data_text:
-                                date_elements = soup_edital.find_all(["span", "div", "p", "strong"], 
-                                                                    string=lambda text: text and any(word in text.lower() for word in ["data", "leilão", "realização"]))
-                                for elem in date_elements:
-                                    parent = elem.parent
-                                    if parent:
-                                        parent_text = parent.get_text(" ", strip=True)
-                                        if any(char.isdigit() for char in parent_text):
-                                            data_text = parent_text
-                                            break
-                            
-                            # Extrai data do texto encontrado
-                            if data_text:
-                                import re
-                                # Padrões de data: DD/MM/YYYY, DD/MM/YY, etc.
-                                date_patterns = [
-                                    r'(\d{2}/\d{2}/\d{4})',
-                                    r'(\d{2}/\d{2}/\d{2})',
-                                    r'(\d{1,2}/\d{1,2}/\d{4})',
-                                    r'(\d{1,2}\sde\s\w+\sde\s\d{4})'
-                                ]
-                                
-                                for pattern in date_patterns:
-                                    match = re.search(pattern, data_text)
-                                    if match:
-                                        date_str = match.group(1)
-                                        try:
-                                            # Tenta converter para datetime
-                                            if len(date_str) == 10 and date_str[2] == '/' and date_str[5] == '/':
-                                                # Formato DD/MM/YYYY
-                                                data_leilao = datetime.strptime(date_str, "%d/%m/%Y")
-                                            elif len(date_str) == 8 and date_str[2] == '/':
-                                                # Formato DD/MM/YY - assume 2000s
-                                                date_str = date_str[:6] + "20" + date_str[6:]
-                                                data_leilao = datetime.strptime(date_str, "%d/%m/%Y")
-                                            break
-                                        except ValueError:
-                                            # Se não conseguir converter, mantém como string
-                                            data_leilao = date_str
-                                            break
-                    except Exception as e:
-                        print(f"Erro ao extrair data para {codigo}: {e}")
-
-                    titulo = f"Edital {codigo}"
-                    if cidade:
-                        titulo = f"{titulo} - {cidade.title()}"
-                    if data_leilao:
-                        if isinstance(data_leilao, str):
-                            titulo = f"{titulo} ({data_leilao})"
-                        else:
-                            titulo = f"{titulo} ({data_leilao.strftime('%d/%m/%Y')})"
-                    descricao = texto_link
-
-                    # **NOVA FEATURE**: Buscar o veículo mais valioso para usar como capa
-                    imagem_destaque = "https://via.placeholder.com/400x250?text=Edital+Detran+MG"
-                    try:
-                        veiculos_edital = await self.listar_veiculos_do_edital(edital_url)
-                        veiculos_com_valor = [v for v in veiculos_edital if v.valor_inicial and v.valor_inicial > 0]
-                        
-                        if veiculos_com_valor:
-                            mais_valioso = max(veiculos_com_valor, key=lambda v: v.valor_inicial)
-                            if mais_valioso.imagem_url:
-                                imagem_destaque = mais_valioso.imagem_url
-                            print(f"Edital {codigo}: Veículo mais valioso encontrado - {mais_valioso.titulo} (R$ {mais_valioso.valor_inicial:,.2f})")
-                    except Exception as e:
-                        print(f"Erro ao buscar veículo mais valioso para {codigo}: {e}")
-                        # Usa imagem padrão em caso de erro
+                    titulo = f"Edital {codigo} - Belo Horizonte"
+                    descricao = f"Leilão oficial do Detran MG - Edital {codigo}"
 
                     veiculos.append(
                         VeiculoLeilao(
@@ -236,15 +73,12 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                             titulo=titulo,
                             descricao=descricao,
                             estado=Estado.MG,
-                            cidade=cidade,
+                            cidade="Belo Horizonte",
                             fonte=FonteLeilao.DETRAN_MG,
                             url=edital_url,
-                            imagem_url=imagem_destaque,
-                            imagens=[
-                                imagem_destaque,
-                                "https://via.placeholder.com/400x250?text=Edital+Detran+MG+2",
-                            ],
-                            data_leilao=data_leilao if isinstance(data_leilao, datetime) else None,
+                            imagem_url="https://via.placeholder.com/400x250?text=Edital+Detran+MG",
+                            imagens=["https://via.placeholder.com/400x250?text=Edital+Detran+MG"],
+                            data_leilao=None,
                         )
                     )
                     count += 1
