@@ -331,23 +331,30 @@ async def pagina_lote_detalhes(lote_id: str, request: Request):
         lote_encontrado = None
         edital_encontrado = None
 
-        # Procura nos leilões em cache
-        for leilao in leiloes_cache:
-            if lote_id in leilao.id:
-                print(f"✅ Lote encontrado no cache do edital: {leilao.titulo}")
-                # Busca os veículos deste edital específico
-                from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
-                veiculos = await fonte_detran_mg_oficial.listar_veiculos_do_edital(leilao.url)
+        # Extrair código do edital do ID do lote (ex: detran_mg_edital_3571_2026_lote_1 -> 3571_2026)
+        import re
+        edital_codigo_match = re.search(r'detran_mg_edital_(\d+_\d+)_lote_\d+', lote_id)
+        if edital_codigo_match:
+            edital_codigo = edital_codigo_match.group(1)
+            print(f"DEBUG: Código do edital extraído: {edital_codigo}")
 
-                for veiculo in veiculos:
-                    if veiculo.id == lote_id:
-                        lote_encontrado = veiculo
-                        edital_encontrado = leilao
-                        print(f"✅ Lote encontrado: {veiculo.titulo}")
+            # Procura nos leilões em cache
+            for leilao in leiloes_cache:
+                if edital_codigo in leilao.id:
+                    print(f"✅ Edital encontrado no cache: {leilao.titulo}")
+                    # Busca os veículos deste edital específico
+                    from app.fontes.detran_mg_oficial import fonte_detran_mg_oficial
+                    veiculos = await fonte_detran_mg_oficial.listar_veiculos_do_edital(leilao.url)
+
+                    for veiculo in veiculos:
+                        if veiculo.id == lote_id:
+                            lote_encontrado = veiculo
+                            edital_encontrado = leilao
+                            print(f"✅ Lote encontrado: {veiculo.titulo}")
+                            break
+
+                    if lote_encontrado:
                         break
-
-                if lote_encontrado:
-                    break
         
         # Se não encontrou, tenta busca mais ampla
         if not lote_encontrado:
