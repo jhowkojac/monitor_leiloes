@@ -188,6 +188,7 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                             edital_id = abs(hash(edital_url))
 
                         veiculo_id = f"detran_mg_edital_{edital_id}_lote_{lote_numero}"
+                        print(f"DEBUG: Gerado ID veiculo: {veiculo_id} (lote_numero={lote_numero})")
 
                         # Tentar extrair estado de conservação
                         spans = card.find_all("span")
