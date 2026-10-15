@@ -174,10 +174,14 @@ class FonteDetranMGOficial(FonteLeilaoBase):
                         lote_span = card.find("span")
                         lote_numero_texto = lote_span.get_text(strip=True) if lote_span else f"{(pagina_atual-1)*8 + idx + 1}"
 
+                        print(f"DEBUG: lote_span texto = '{lote_numero_texto}'")
+
                         # Extrair apenas o número (remove "Lote" se tiver)
                         import re
                         lote_numero_match = re.search(r'\d+', lote_numero_texto)
                         lote_numero = lote_numero_match.group(0) if lote_numero_match else lote_numero_texto
+
+                        print(f"DEBUG: lote_numero extraido = '{lote_numero}'")
 
                         # ID consistente baseado no número do lote e código do edital
                         # Extrair código do edital da URL
